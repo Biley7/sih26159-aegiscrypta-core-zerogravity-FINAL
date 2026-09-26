@@ -1,0 +1,15 @@
+fastapi>=0.110.0
+uvicorn[standard]>=0.28.0
+dnspython>=2.6.0
+reportlab>=4.1.0
+pydantic>=2.6.0
+cryptography>=42.0.0
+scapy>=2.5.0
+numpy>=1.26.0
+scikit-learn>=1.4.0
+scikit-fuzzy>=0.4.2
+jinja2>=3.1.0
+python-multipart>=0.0.9
+python-dotenv>=1.0.0
+google-generativeai>=0.8.0
+networkx>=3.0
