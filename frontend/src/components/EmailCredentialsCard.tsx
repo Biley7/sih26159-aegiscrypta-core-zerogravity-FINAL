@@ -3,81 +3,111 @@ import { MailCheck, ArrowUpRight } from 'lucide-react';
 import { CheckResult, CryptographicPosture } from '../types';
 
 interface EmailCredentialsCardProps {
+  className?: string;
   checks?: CheckResult[];
   cryptoPosture?: CryptographicPosture | null;
   onExpand?: () => void;
 }
 
+type AuthState = 'pass' | 'warn' | 'fail' | 'unknown';
+
+function stateFromCheck(check: CheckResult | undefined): AuthState {
+  if (!check) return 'unknown';
+  switch (check.status) {
+    case 'pass':
+      return 'pass';
+    case 'warn':
+      return 'warn';
+    case 'fail':
+      return 'fail';
+    default:
+      return 'unknown';
+  }
+}
+
+const STATE_COLORS: Record<AuthState, string> = {
+  pass: '#10b981',
+  warn: '#f59e0b',
+  fail: '#f43f5e',
+  unknown: '#64748b'
+};
+
 export const EmailCredentialsCard: React.FC<EmailCredentialsCardProps> = ({
+  className = '',
   checks = [],
   cryptoPosture,
   onExpand
 }) => {
-  // Extract key email auth and crypto statuses
-  const spfPass = checks.some((c) => c.name.toLowerCase().includes('spf') && c.status === 'pass');
-  const dkimPass = checks.some((c) => c.name.toLowerCase().includes('dkim') && c.status === 'pass');
-  const dmarcPass = checks.some((c) => c.name.toLowerCase().includes('dmarc') && c.status === 'pass');
-  const mtaStsPass = checks.some((c) => c.name.toLowerCase().includes('mta-sts') && c.status === 'pass');
-  const starttlsPass = checks.some((c) => c.name.toLowerCase().includes('starttls') && c.status === 'pass');
-  const fsPass = cryptoPosture?.forward_secrecy_supported ?? true;
-  const certPass = cryptoPosture?.protocols_audited?.[0]?.tls_handshake?.certificate?.chain_valid !== false;
+  const findCheck = (fragment: string) => checks.find((c) => c.name.toLowerCase().includes(fragment));
+  const cert = cryptoPosture?.protocols_audited?.[0]?.tls_handshake?.certificate ?? null;
 
-  const authItems = [
-    { name: 'SPF', pass: spfPass },
-    { name: 'DKIM', pass: dkimPass },
-    { name: 'DMARC', pass: dmarcPass },
-    { name: 'MTA-STS', pass: mtaStsPass },
-    { name: 'STARTTLS', pass: starttlsPass },
-    { name: 'FORWARD SEC', pass: fsPass },
-    { name: 'CERT TRUST', pass: certPass }
+  // Missing forward secrecy or chain data must never be coerced to a pass.
+  const authItems: { name: string; short: string; state: AuthState }[] = [
+    { name: 'SPF', short: 'SPF', state: stateFromCheck(findCheck('spf')) },
+    { name: 'DKIM', short: 'DKIM', state: stateFromCheck(findCheck('dkim')) },
+    { name: 'DMARC', short: 'DMARC', state: stateFromCheck(findCheck('dmarc')) },
+    { name: 'MTA-STS', short: 'STS', state: stateFromCheck(findCheck('mta-sts')) },
+    { name: 'STARTTLS', short: 'TLS', state: stateFromCheck(findCheck('starttls')) },
+    {
+      name: 'FORWARD SEC',
+      short: 'PFS',
+      state: cryptoPosture ? (cryptoPosture.forward_secrecy_supported ? 'pass' : 'fail') : 'unknown'
+    },
+    {
+      name: 'CERT TRUST',
+      short: 'CERT',
+      state: cert?.chain_valid === true ? 'pass' : cert?.chain_valid === false ? 'fail' : 'unknown'
+    }
   ];
 
   const totalEvaluated = authItems.length;
-  const totalPassed = authItems.filter((i) => i.pass).length;
+  const totalPassed = authItems.filter((i) => i.state === 'pass').length;
+  const unknownCount = authItems.filter((i) => i.state === 'unknown').length;
 
-  // Dynamically compute SVG coordinates across the 270x90 canvas
-  // Pass -> higher on graph (lower y, e.g. 20-35), Fail -> lower on graph (higher y, e.g. 65-75)
+  // Dynamically compute SVG coordinates across the 270x90 canvas.
+  // The line encodes per-check status only (no fabricated time-series baseline).
   const xPositions = [15, 52, 90, 128, 165, 202, 240];
+  const yForState = (state: AuthState, idx: number): number => {
+    const offset = idx % 2 === 0 ? 0 : 6;
+    switch (state) {
+      case 'pass':
+        return 22 + offset;
+      case 'warn':
+        return 45 + offset;
+      case 'fail':
+        return 68;
+      default:
+        return 45;
+    }
+  };
   const line1Points = authItems.map((item, idx) => ({
-    x: xPositions[idx] || (idx * 35 + 15),
-    y: item.pass ? 22 + (idx % 2 === 0 ? 0 : 8) : 68 + (idx % 2 === 0 ? 4 : 0)
+    x: xPositions[idx] ?? idx * 35 + 15,
+    y: yForState(item.state, idx)
   }));
 
-  // Baseline standard line
-  const line2Points = [
-    { x: 15, y: 55 },
-    { x: 52, y: 50 },
-    { x: 90, y: 48 },
-    { x: 128, y: 52 },
-    { x: 165, y: 45 },
-    { x: 202, y: 50 },
-    { x: 240, y: 46 }
-  ];
-
   const line1Path = `M ${line1Points.map((p) => `${p.x} ${p.y}`).join(' L ')}`;
-  const line2Path = `M ${line2Points.map((p) => `${p.x} ${p.y}`).join(' L ')}`;
 
   return (
-    <div className="rounded-xl bg-slate-900/60 dark:bg-[#111726] border border-slate-800/80 p-4 transition-colors flex flex-col justify-between">
+    <div className={`${className} bg-[#0c1220]/80 backdrop-blur-md border border-slate-800/80 rounded-xl p-5 shadow-lg shadow-black/20 hover:border-cyan-500/30 transition-all duration-200 flex flex-col justify-between`}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <MailCheck size={14} className="text-slate-400" />
-          <span className="text-xs font-semibold text-slate-100 tracking-tight font-sans">
-            Email Authentication &amp; TLS Credentials
+          <MailCheck size={15} className="text-[#00f0ff]" />
+          <span className="text-[11px] font-semibold tracking-widest text-slate-400 uppercase">
+            Email Auth · TLS Credentials
           </span>
         </div>
         <button
           type="button"
           onClick={onExpand}
-          className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors"
+          className="p-1 rounded hover:bg-slate-800/70 text-slate-400 hover:text-cyan-400 transition-colors"
           title="Inspect Handshakes"
         >
           <ArrowUpRight size={14} />
         </button>
       </div>
 
-      {/* Dual Line Chart */}
+      {/* Per-check status line */}
       <div className="relative w-full h-26 my-auto">
         <svg
           viewBox="0 0 270 90"
@@ -89,55 +119,71 @@ export const EmailCredentialsCard: React.FC<EmailCredentialsCardProps> = ({
           <line x1="5" y1="50" x2="265" y2="50" stroke="#1e293b" strokeDasharray="3 3" />
           <line x1="5" y1="80" x2="265" y2="80" stroke="#1e293b" strokeDasharray="3 3" />
 
-          {/* Secondary Baseline Line */}
-          <path
-            d={line2Path}
-            fill="none"
-            stroke="#64748b"
-            strokeWidth="1.5"
-            strokeDasharray="4 3"
-          />
-
-          {/* Primary Scan Results Line */}
+          {/* Latest scan results, one point per check */}
           <path
             d={line1Path}
             fill="none"
-            stroke="#3b82f6"
-            strokeWidth="2"
+            stroke="#00f0ff"
+            strokeWidth="2.2"
             strokeLinecap="round"
+            style={{ filter: 'drop-shadow(0 0 4px rgba(0, 240, 255, 0.45))' }}
           />
 
+          {line1Points.map((pt, i) => {
+            const state = authItems[i]?.state ?? 'unknown';
+            return (
+              <circle
+                key={i}
+                cx={pt.x}
+                cy={pt.y}
+                r="3"
+                fill="#090d16"
+                stroke={STATE_COLORS[state]}
+                strokeWidth="2"
+                strokeDasharray={state === 'unknown' ? '2 2' : undefined}
+              />
+            );
+          })}
+
+          {/* Categorical x-axis labels (not a time series) */}
           {line1Points.map((pt, i) => (
-            <circle
-              key={i}
-              cx={pt.x}
-              cy={pt.y}
-              r="3"
-              fill="#090d16"
-              stroke={authItems[i]?.pass ? '#10b981' : '#f43f5e'}
-              strokeWidth="2"
-            />
+            <text
+              key={`label-${i}`}
+              x={pt.x}
+              y="88"
+              textAnchor="middle"
+              fill="#475569"
+              fontSize="6.5"
+              fontFamily="monospace"
+            >
+              {authItems[i]?.short}
+            </text>
           ))}
         </svg>
       </div>
 
       {/* Axis & Legend */}
-      <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] font-mono text-slate-400">
-        <div className="flex items-center gap-3">
+      <div className="pt-3 border-t border-slate-800/60 flex items-center justify-between text-[10px] font-mono text-slate-400">
+        <div className="flex items-center gap-4">
           <span className="flex items-center gap-1.5">
-            <span className="w-2 h-0.5 bg-blue-500 inline-block"></span>
-            <span>Audited Vector</span>
+            <span
+              className="w-3 h-0.5 inline-block"
+              style={{ backgroundColor: '#00f0ff', boxShadow: '0 0 4px #00f0ff' }}
+            ></span>
+            <span className="tracking-widest uppercase">Latest scan checks</span>
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-2 h-0.5 bg-slate-500 inline-block"></span>
-            <span>Policy Baseline</span>
+            <span
+              className="w-2 h-2 rounded-full inline-block border-2"
+              style={{ borderColor: '#64748b' }}
+            ></span>
+            <span className="tracking-widest uppercase">Unknown</span>
           </span>
         </div>
-        <span className="text-emerald-400 font-semibold">
-          {totalPassed}/{totalEvaluated} ALIGNED
+        <span className={`font-semibold tracking-widest uppercase ${unknownCount > 0 ? 'text-amber-400' : 'text-emerald-400'}`}>
+          {totalPassed}/{totalEvaluated} Passed{unknownCount > 0 ? ` · ${unknownCount} N/A` : ''}
         </span>
       </div>
     </div>
   );
 };
-

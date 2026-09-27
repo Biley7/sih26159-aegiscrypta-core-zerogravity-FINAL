@@ -28,7 +28,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   onSearchChange,
   onTriggerScan,
   isScanning = false,
-  backendOnline = true
+  backendOnline = null
 }) => {
   const [isFocused, setIsFocused] = useState(false);
 
@@ -108,9 +108,11 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
       <div className="flex items-center gap-3 shrink-0">
         {/* Backend Online/Offline Status Indicator */}
         <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/80 border border-slate-800 text-xs font-mono text-slate-300">
-          <span className={`w-2 h-2 rounded-full ${backendOnline ? 'bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'bg-amber-400'}`}></span>
+          <span className={`w-2 h-2 rounded-full ${backendOnline === true ? 'bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : backendOnline === false ? 'bg-rose-400' : 'bg-amber-400'}`}></span>
           <span className="text-slate-400">ENGINE:</span>
-          <span className="text-cyan-300 font-semibold">{backendOnline ? 'PQC / PORT 8000' : 'SIMULATION'}</span>
+          <span className={`font-semibold ${backendOnline === true ? 'text-cyan-300' : backendOnline === false ? 'text-rose-300' : 'text-amber-300'}`}>
+            {backendOnline === true ? 'ONLINE' : backendOnline === false ? 'OFFLINE' : 'CHECKING'}
+          </span>
         </div>
 
         {/* Primary CTA: "Security Report" */}

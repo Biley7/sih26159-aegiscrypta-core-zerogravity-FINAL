@@ -11,17 +11,20 @@ import {
 import { FindingSeverity, ScanResponse } from '../types';
 
 interface HeroGaugesProps {
-  data: ScanResponse;
+  scanData?: ScanResponse | null;
+  data?: ScanResponse;
   onSelectSeverity?: (sev: FindingSeverity | 'ALL') => void;
   selectedSeverity?: FindingSeverity | 'ALL';
 }
 
 export const HeroGauges: React.FC<HeroGaugesProps> = ({
+  scanData,
   data,
   onSelectSeverity,
   selectedSeverity
 }) => {
-  const score = Math.max(0, Math.min(100, data.score));
+  const activeScan = scanData ?? data;
+  const score = Math.max(0, Math.min(100, activeScan?.security_score ?? activeScan?.score ?? 0));
 
   // Grade calculation with exact semantic mappings
   const getGradeInfo = (score: number) => {
@@ -40,36 +43,37 @@ export const HeroGauges: React.FC<HeroGaugesProps> = ({
   const strokeDashoffset = circumference - (score / 100) * circumference;
 
   // Counts of findings
-  const findings = data.prioritized_findings || [];
+  const findings = activeScan?.prioritized_findings || [];
   const criticalCount = findings.filter((f) => f.severity === 'CRITICAL').length;
   const highCount = findings.filter((f) => f.severity === 'HIGH').length;
   const mediumCount = findings.filter((f) => f.severity === 'MEDIUM').length;
   const lowCount = findings.filter((f) => f.severity === 'LOW').length;
 
   // PQC analysis from cipher and host data
-  const hasPqc = data.crypto_posture?.protocols_audited.some((p) => {
+  const hasPqc = activeScan?.crypto_posture?.protocols_audited.some((p) => {
     const kx = (p.tls_handshake?.cipher?.key_exchange || '').toLowerCase();
     const cName = (p.tls_handshake?.cipher?.name || '').toLowerCase();
     return kx.includes('kyber') || kx.includes('ml-kem') || cName.includes('kyber') || cName.includes('mlkem');
   });
 
   // Transport checks
-  const mtaStsCheck = data.checks.find((c) => c.name === 'MTA-STS');
-  const daneCheck = data.checks.find((c) => c.name.includes('DANE') || c.name.includes('TLSA'));
-  const mxCheck = data.checks.find((c) => c.name.includes('STARTTLS') || c.name === 'MX & STARTTLS');
+  const checks = activeScan?.checks ?? [];
+  const mtaStsCheck = checks.find((c) => c.name === 'MTA-STS');
+  const daneCheck = checks.find((c) => c.name.includes('DANE') || c.name.includes('TLSA'));
+  const mxCheck = checks.find((c) => c.name.includes('STARTTLS') || c.name === 'MX & STARTTLS');
 
-  const starttlsActive = data.crypto_posture?.protocols_audited.some(
+  const starttlsActive = activeScan?.crypto_posture?.protocols_audited.some(
     (p) => p.starttls_negotiated
   ) ?? (mxCheck?.status === 'pass' || mxCheck?.status === 'warn');
 
   // Case-insensitive check handling both 'TLSv1.3' and 'TLS 1.3'
-  const tls13Active = data.crypto_posture?.protocols_audited.some((p) => {
+  const tls13Active = activeScan?.crypto_posture?.protocols_audited.some((p) => {
     const ver = (p.tls_handshake?.negotiated_version || '').toLowerCase();
     return ver === 'tlsv1.3' || ver === 'tls 1.3';
   });
 
   return (
-    <div className="security-posture-block">
+    <div className="security-posture-block bg-slate-50 dark:bg-slate-900/80 text-slate-900 dark:text-slate-100">
       {/* Primary Scorecard */}
       <div className="scorecard-primary">
         <div className="scorecard-header">
@@ -77,7 +81,7 @@ export const HeroGauges: React.FC<HeroGaugesProps> = ({
             <ShieldCheck size={14} className="text-soc-secure" />
             <h3 className="scorecard-title">Security Posture</h3>
           </div>
-          <span className="scorecard-domain font-mono">{data.domain}</span>
+          <span className="scorecard-domain font-mono">{activeScan?.domain ?? 'Awaiting scan'}</span>
         </div>
 
         <div className="scorecard-body">
@@ -118,7 +122,7 @@ export const HeroGauges: React.FC<HeroGaugesProps> = ({
               <span className="grade-label">{gradeInfo.label}</span>
             </div>
             <div className="scorecard-details font-mono text-xs text-text-secondary">
-              <span>{new Date(data.scanned_at).toLocaleTimeString()}</span>
+              <span>{activeScan?.scanned_at ? new Date(activeScan.scanned_at).toLocaleTimeString() : 'No scan yet'}</span>
               <span className="text-text-muted">NIST SP 800-52r2</span>
             </div>
           </div>

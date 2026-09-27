@@ -12,9 +12,7 @@ import {
   AlertCircle,
   Eye,
   FileText,
-  Check,
-  Upload,
-  RotateCcw
+  Check
 } from 'lucide-react';
 import { AppSettings } from '../types';
 import { setApiKey } from '../api';
@@ -42,8 +40,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [localApiKey, setLocalApiKey] = useState(() => sessionStorage.getItem('aegis_api_key') || '');
   const [urlSaved, setUrlSaved] = useState(false);
   const [apiKeySaved, setApiKeySaved] = useState(false);
-  const [logoUploaded, setLogoUploaded] = useState(false);
-
   if (!isOpen) return null;
 
   const handleThemeChange = (newTheme: 'dark' | 'light' | 'high-contrast') => {
@@ -54,28 +50,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     } else {
       document.documentElement.classList.add('dark');
     }
-  };
-
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const base64 = event.target?.result as string;
-        localStorage.setItem('aegis_custom_logo', base64);
-        setLogoUploaded(true);
-        setTimeout(() => {
-          setLogoUploaded(false);
-          window.location.reload();
-        }, 1000);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleResetLogo = () => {
-    localStorage.removeItem('aegis_custom_logo');
-    window.location.reload();
   };
 
   const handleSaveApiUrl = (e: React.FormEvent) => {
@@ -93,28 +67,28 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in font-sans">
-      <div className="relative w-full max-w-xl rounded-xl bg-slate-900 border border-slate-800 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden text-slate-100">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/75 backdrop-blur-sm animate-fade-in font-sans">
+      <div className="relative w-full max-w-xl rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden text-slate-900 dark:text-slate-100">
         
         {/* Header */}
-        <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950/70">
+        <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-950/70">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded bg-slate-800 flex items-center justify-center text-slate-300">
+            <div className="w-8 h-8 rounded bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300">
               <Sliders size={16} />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-white tracking-tight">
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-white tracking-tight">
                 Console Settings &amp; Preferences
               </h3>
-              <p className="text-[11px] text-slate-400">
-                Configure operational theme, custom branding, and backend endpoints.
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Configure operational theme and backend endpoints.
               </p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-1 rounded text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
           >
             <X size={16} />
           </button>
@@ -126,10 +100,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {/* 1. Global Theme Toggle */}
           <section className="space-y-2">
             <div>
-              <span className="font-semibold text-slate-200 uppercase tracking-wider text-[10px] font-mono">
+              <span className="font-semibold text-slate-700 dark:text-slate-200 uppercase tracking-wider text-[10px] font-mono">
                 Visual Theme &amp; Contrast
               </span>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
                 Select your display mode. Transitions the entire dashboard instantaneously.
               </p>
             </div>
@@ -141,18 +115,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 onClick={() => handleThemeChange('dark')}
                 className={`p-3 rounded-lg border text-left transition-colors font-mono ${
                   settings.theme === 'dark'
-                    ? 'border-blue-500 bg-blue-500/10 text-white font-semibold'
-                    : 'border-slate-800 bg-slate-800/40 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                    ? 'border-blue-500 bg-blue-500/10 text-slate-900 dark:text-white font-semibold'
+                    : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700'
                 }`}
               >
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-1.5 text-xs">
-                    <Moon size={13} className="text-slate-400" />
+                    <Moon size={13} className="text-indigo-400 dark:text-slate-400" />
                     <span>Deep Dark</span>
                   </div>
-                  {settings.theme === 'dark' && <Check size={12} className="text-blue-400" />}
+                  {settings.theme === 'dark' && <Check size={12} className="text-blue-500 dark:text-blue-400" />}
                 </div>
-                <span className="text-[10px] text-slate-500 block">#090D16 SOC Base</span>
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 block">#090D16 SOC Base</span>
               </button>
 
               {/* Slate Light */}
@@ -161,18 +135,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 onClick={() => handleThemeChange('light')}
                 className={`p-3 rounded-lg border text-left transition-colors font-mono ${
                   settings.theme === 'light'
-                    ? 'border-blue-500 bg-blue-500/10 text-white font-semibold'
-                    : 'border-slate-800 bg-slate-800/40 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                    ? 'border-blue-500 bg-blue-500/10 text-slate-900 dark:text-white font-semibold'
+                    : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700'
                 }`}
               >
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-1.5 text-xs">
-                    <Sun size={13} className="text-amber-400" />
+                    <Sun size={13} className="text-amber-500 dark:text-amber-400" />
                     <span>Slate Light</span>
                   </div>
-                  {settings.theme === 'light' && <Check size={12} className="text-blue-400" />}
+                  {settings.theme === 'light' && <Check size={12} className="text-blue-500 dark:text-blue-400" />}
                 </div>
-                <span className="text-[10px] text-slate-500 block">#F8FAFC Daylight</span>
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 block">#F8FAFC Daylight</span>
               </button>
 
               {/* High Contrast OLED */}
@@ -181,83 +155,43 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 onClick={() => handleThemeChange('high-contrast')}
                 className={`p-3 rounded-lg border text-left transition-colors font-mono ${
                   settings.theme === 'high-contrast'
-                    ? 'border-blue-500 bg-blue-500/10 text-white font-semibold'
-                    : 'border-slate-800 bg-slate-800/40 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                    ? 'border-blue-500 bg-blue-500/10 text-slate-900 dark:text-white font-semibold'
+                    : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700'
                 }`}
               >
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-1.5 text-xs">
-                    <Shield size={13} className="text-emerald-400" />
+                    <Shield size={13} className="text-emerald-500 dark:text-emerald-400" />
                     <span>Pure Black</span>
                   </div>
-                  {settings.theme === 'high-contrast' && <Check size={12} className="text-blue-400" />}
+                  {settings.theme === 'high-contrast' && <Check size={12} className="text-blue-500 dark:text-blue-400" />}
                 </div>
-                <span className="text-[10px] text-slate-500 block">OLED High-Contrast</span>
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 block">OLED High-Contrast</span>
               </button>
             </div>
           </section>
 
-          {/* 2. Custom Dashboard Logo Branding */}
-          <section className="space-y-2 pt-3 border-t border-slate-800">
+          {/* 2. FastAPI Backend Gateway Endpoint */}
+          <section className="space-y-2 pt-3 border-t border-slate-200 dark:border-slate-800">
             <div>
-              <span className="font-semibold text-slate-200 uppercase tracking-wider text-[10px] font-mono">
-                Dashboard Logo &amp; Custom Branding
-              </span>
-              <p className="text-[11px] text-slate-400">
-                Upload custom logo (PNG/SVG) to persist across sessions in local storage.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3">
-              <label className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs text-slate-200 cursor-pointer transition-colors">
-                <Upload size={13} />
-                <span>Upload Custom Logo</span>
-                <input
-                  type="file"
-                  accept="image/png, image/svg+xml, image/webp"
-                  onChange={handleLogoUpload}
-                  className="hidden"
-                />
-              </label>
-
-              <button
-                type="button"
-                onClick={handleResetLogo}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800/60 hover:bg-slate-800 border border-slate-700 text-xs text-slate-400 hover:text-slate-200 transition-colors"
-              >
-                <RotateCcw size={12} />
-                <span>Reset to Default</span>
-              </button>
-
-              {logoUploaded && (
-                <span className="text-emerald-400 font-mono text-xs flex items-center gap-1">
-                  <Check size={12} /> Logo updated! Reloading...
-                </span>
-              )}
-            </div>
-          </section>
-
-          {/* 3. FastAPI Backend Gateway Endpoint */}
-          <section className="space-y-2 pt-3 border-t border-slate-800">
-            <div>
-              <span className="font-semibold text-slate-200 uppercase tracking-wider text-[10px] font-mono">
+              <span className="font-semibold text-slate-700 dark:text-slate-200 uppercase tracking-wider text-[10px] font-mono">
                 Backend Daemon Endpoint
               </span>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
                 Configured REST endpoint for cryptographic scans and live probes.
               </p>
             </div>
 
             <form onSubmit={handleSaveApiUrl} className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
-                <div className="flex-1 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700">
-                  <Server size={14} className="text-slate-400" />
+                <div className="flex-1 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+                  <Server size={14} className="text-slate-500 dark:text-slate-400" />
                   <input
                     type="text"
                     value={localApiUrl}
                     onChange={(e) => setLocalApiUrl(e.target.value)}
                     placeholder="http://localhost:8000"
-                    className="flex-1 bg-transparent border-none outline-none font-mono text-xs text-slate-100"
+                    className="flex-1 bg-transparent border-none outline-none font-mono text-xs text-slate-900 dark:text-slate-100"
                     spellCheck={false}
                   />
                 </div>
@@ -271,12 +205,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
               <div className="flex items-center justify-between text-xs font-mono pt-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-slate-400">Daemon Status:</span>
-                  <span className={`inline-flex items-center gap-1 font-semibold ${backendOnline ? 'text-emerald-400' : 'text-amber-400'}`}>
+                  <span className="text-slate-500 dark:text-slate-400">Daemon Status:</span>
+                  <span className={`inline-flex items-center gap-1 font-semibold ${backendOnline ? 'text-emerald-500 dark:text-emerald-400' : 'text-amber-500 dark:text-amber-400'}`}>
                     {backendOnline ? (
                       <>
                         <CheckCircle2 size={12} />
-                        <span>Connected (Port 8000)</span>
+                        <span className="truncate max-w-[180px]" title={settings.apiBaseUrl}>
+                          Connected ({settings.apiBaseUrl})
+                        </span>
                       </>
                     ) : (
                       <>
@@ -291,7 +227,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   type="button"
                   onClick={onTestPing}
                   disabled={isPinging}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 transition-colors"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 transition-colors disabled:opacity-50"
                 >
                   <RefreshCw size={11} className={isPinging ? 'animate-spin' : ''} />
                   <span>{isPinging ? 'Probing...' : 'Ping Test'}</span>
@@ -300,9 +236,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </form>
           </section>
 
-          <section className="space-y-2 pt-3 border-t border-slate-800">
+          <section className="space-y-2 pt-3 border-t border-slate-200 dark:border-slate-800">
             <div>
-              <span className="font-semibold text-slate-200 uppercase tracking-wider text-[10px] font-mono">
+              <span className="font-semibold text-slate-700 dark:text-slate-200 uppercase tracking-wider text-[10px] font-mono">
                 API Shared Key
               </span>
             </div>
@@ -313,7 +249,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 onChange={(e) => setLocalApiKey(e.target.value)}
                 placeholder="AEGIS_API_KEY"
                 autoComplete="off"
-                className="flex-1 min-w-0 px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700 outline-none font-mono text-xs text-slate-100"
+                className="flex-1 min-w-0 px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 outline-none font-mono text-xs text-slate-900 dark:text-slate-100"
               />
               <button
                 type="submit"
@@ -327,14 +263,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-3.5 border-t border-slate-800 bg-slate-950/70 flex items-center justify-between text-xs font-mono">
-          <span className="text-slate-500 text-[11px]">
+        <div className="p-3.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-950/70 flex items-center justify-between text-xs font-mono">
+          <span className="text-slate-500 dark:text-slate-500 text-[11px]">
             Aegiscripta Enterprise SOC v2.4
           </span>
           <button
             type="button"
             onClick={onClose}
-            className="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-semibold transition-colors"
+            className="px-3.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-semibold transition-colors border border-slate-200 dark:border-transparent"
           >
             Done
           </button>

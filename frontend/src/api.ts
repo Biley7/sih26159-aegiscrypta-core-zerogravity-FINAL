@@ -48,17 +48,59 @@ export function setApiKey(apiKey: string) {
     sessionStorage.removeItem('aegis_api_key');
   }
 }
-export async function checkBackendHealth(): Promise<boolean> {
+export interface BackendHealthResult {
+  online: boolean;
+  endpoint: string;
+  statusCode: number | null;
+  detail: string;
+}
+
+function resolveHealthEndpoint(): string {
+  const baseUrl = (apiClient.defaults.baseURL || '').replace(/\/+$/, '');
+  return `${baseUrl}/health`;
+}
+
+/**
+ * Performs a live GET /health against the configured apiBaseUrl and reports the
+ * actual endpoint, HTTP status code, and failure reason so the UI can display
+ * real health telemetry instead of cached booleans or hardcoded ports.
+ */
+export async function getBackendHealth(): Promise<BackendHealthResult> {
+  const endpoint = resolveHealthEndpoint();
   try {
     const res = await apiClient.get('/health', { timeout: 3000 });
-    return res.status === 200;
-  } catch {
-    return false;
+    return {
+      online: res.status >= 200 && res.status < 300,
+      endpoint,
+      statusCode: res.status,
+      detail: `HTTP ${res.status}`
+    };
+  } catch (err) {
+    if (axios.isAxiosError(err)) {
+      const statusCode = err.response?.status ?? null;
+      const detail = statusCode
+        ? `HTTP ${statusCode}`
+        : err.code === 'ECONNABORTED'
+          ? 'request timed out'
+          : err.message || 'unreachable';
+      return { online: false, endpoint, statusCode, detail };
+    }
+    return {
+      online: false,
+      endpoint,
+      statusCode: null,
+      detail: err instanceof Error ? err.message : 'unreachable'
+    };
   }
 }
 
+export async function checkBackendHealth(): Promise<boolean> {
+  const result = await getBackendHealth();
+  return result.online;
+}
+
 export async function scanDomain(domain: string): Promise<{ data: ScanResponse; isFallback: boolean }> {
-  const res = await apiClient.post<ScanResponse>('/api/scan', { domain }, { timeout: 30000 });
+  const res = await apiClient.post<ScanResponse>('/api/scan', { domain, is_customer_facing: true }, { timeout: 30000 });
   return { data: res.data, isFallback: false };
 }
 

@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^sh \\./\\.agents/skills/impeccable/scripts/impeccable context --target frontend/src/App\\.tsx$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

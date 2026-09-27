@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { CryptographicPosture, CheckResult } from '../types';
+import { CryptographicPosture, CheckResult, ScanResponse } from '../types';
+import { statusToScore } from '../scanMetrics';
 
 export type KeyMode = 'adopt' | 'encrypt' | 'decrypt';
 
@@ -9,19 +10,36 @@ interface ProtocolRow {
   protocol: string;
   metric: string;
   progress: number;
+  unknown: boolean;
 }
 
 interface KeyProtocolCardProps {
+  className?: string;
   cryptoPosture?: CryptographicPosture | null;
   checks?: CheckResult[];
   score?: number | null;
+  scanData?: ScanResponse | null;
   onModeChange?: (mode: KeyMode) => void;
 }
 
+function normalizeTlsVersion(value: string): string {
+  return value.replace(/^TLSv/i, 'TLS ').replace(/^TLS(\d)/i, 'TLS $1');
+}
+
+function keyStrengthProgress(algorithm?: string | null, bits?: number | null): number | null {
+  if (bits == null || !Number.isFinite(bits)) return null;
+  const upper = (algorithm || '').toUpperCase();
+  const isEllipticCurve = upper.includes('ECC') || upper.includes('ECDSA') || upper.includes('ED25519') || upper.includes('ED448');
+  if (isEllipticCurve) return bits >= 256 ? 100 : 50;
+  return bits >= 2048 ? 100 : bits >= 1024 ? 50 : 20;
+}
+
 export const KeyProtocolCard: React.FC<KeyProtocolCardProps> = ({
+  className = '',
   cryptoPosture,
   checks,
   score,
+  scanData,
   onModeChange
 }) => {
   const [activeMode, setActiveMode] = useState<KeyMode>('adopt');
@@ -31,106 +49,163 @@ export const KeyProtocolCard: React.FC<KeyProtocolCardProps> = ({
     if (onModeChange) onModeChange(mode);
   };
 
-  const primaryAudit = cryptoPosture?.protocols_audited?.[0];
-  const tlsHandshake = primaryAudit?.tls_handshake;
-  const cipher = tlsHandshake?.cipher;
-  const cert = tlsHandshake?.certificate;
-  const tlsVersion = tlsHandshake?.negotiated_version || 'TLSv1.3';
-  const fsSupported = cryptoPosture?.forward_secrecy_supported ?? true;
+  const activeCryptoPosture = scanData?.crypto_posture ?? cryptoPosture ?? null;
+  const activeChecks = scanData?.checks ?? checks ?? [];
+  const activeScore = scanData?.security_score ?? scanData?.score ?? score ?? null;
+  const primaryAudit = activeCryptoPosture?.protocols_audited?.[0] ?? null;
+  const tlsHandshake = primaryAudit?.tls_handshake ?? null;
+  const cipher = tlsHandshake?.cipher ?? null;
+  const cert = tlsHandshake?.certificate ?? null;
+  const rawTlsVersion = tlsHandshake?.negotiated_version || tlsHandshake?.tls_version || null;
+  const tlsVersion = rawTlsVersion ? normalizeTlsVersion(rawTlsVersion) : null;
+  const cipherSuite = tlsHandshake?.cipher_suite || cipher?.name || null;
+  const forwardSecrecy = activeCryptoPosture ? activeCryptoPosture.forward_secrecy_supported : null;
 
-  // Find MTA-STS and DANE checks if available
-  const mtaStsCheck = checks?.find((c) => c.name.toLowerCase().includes('mta-sts'));
-  const mtaStsPass = mtaStsCheck?.status === 'pass';
+  const mtaStsCheck = activeChecks.find((c) => c.name.toLowerCase().includes('mta-sts'));
+  const mtaStsScore = statusToScore(mtaStsCheck?.status);
+  const keyStrength = cert ? keyStrengthProgress(cert.public_key_algorithm, cert.key_size_bits) : null;
+  const signatureAlgorithm = cert?.signature_algorithm || null;
+  const issuer = cert?.issuer_cn || cert?.issuer_dn || null;
+  const subject = cert?.subject_cn || cert?.subject_dn || null;
+
+  const tlsRow: ProtocolRow = tlsVersion === 'TLS 1.3'
+    ? { id: '1', name: 'TLS Protocol Enforcement', protocol: `${tlsVersion} (RFC 8446)`, metric: '100%', progress: 100, unknown: false }
+    : tlsVersion === 'TLS 1.2'
+      ? { id: '1', name: 'TLS Protocol Enforcement', protocol: `${tlsVersion} (RFC 5246 or earlier)`, metric: '60%', progress: 60, unknown: false }
+      : tlsVersion
+        ? { id: '1', name: 'TLS Protocol Enforcement', protocol: `${tlsVersion} (legacy)`, metric: 'LEGACY', progress: 25, unknown: false }
+        : { id: '1', name: 'TLS Protocol Enforcement', protocol: 'No handshake telemetry reported', metric: 'N/A', progress: 0, unknown: true };
 
   const rows: Record<KeyMode, ProtocolRow[]> = {
     adopt: [
-      {
-        id: '1',
-        name: 'TLS Protocol Enforcement',
-        protocol: `${tlsVersion} ${tlsVersion === 'TLSv1.3' ? 'RFC 8446' : 'RFC 5246'}`,
-        metric: tlsVersion === 'TLSv1.3' ? '100%' : tlsVersion === 'TLSv1.2' ? '80%' : '30%',
-        progress: tlsVersion === 'TLSv1.3' ? 100 : tlsVersion === 'TLSv1.2' ? 80 : 30
-      },
+      tlsRow,
       {
         id: '2',
         name: 'Perfect Forward Secrecy',
-        protocol: cipher?.key_exchange ? `${cipher.key_exchange} Ephemeral` : fsSupported ? 'ECDHE Ephemeral' : 'Static RSA Key',
-        metric: fsSupported ? '100%' : '0%',
-        progress: fsSupported ? 100 : 0
+        protocol: cipher?.key_exchange
+          ? cipher.key_exchange
+          : forwardSecrecy === true
+            ? 'Forward secrecy reported by posture data'
+            : forwardSecrecy === false
+              ? 'Posture data reports no forward secrecy'
+              : 'No key exchange data reported',
+        metric: forwardSecrecy === true ? '100%' : forwardSecrecy === false ? '0%' : 'N/A',
+        progress: forwardSecrecy === true ? 100 : forwardSecrecy === false ? 0 : 0,
+        unknown: forwardSecrecy === null
       },
       {
         id: '3',
         name: 'Cryptographic Cipher',
-        protocol: cipher?.name ? `${cipher.name.slice(0, 24)}...` : 'AES-256-GCM / SHA-384',
-        metric: cipher?.is_weak ? 'WEAK' : 'SECURE',
-        progress: cipher?.is_weak ? 25 : 100
+        protocol: cipherSuite
+          ? `${cipherSuite.slice(0, 24)}${cipherSuite.length > 24 ? '...' : ''}`
+          : 'No cipher reported',
+        metric: cipher ? (cipher.is_weak ? 'WEAK' : 'SECURE') : 'N/A',
+        progress: cipher ? (cipher.is_weak ? 25 : 100) : 0,
+        unknown: !cipher
       },
       {
         id: '4',
         name: 'MTA-STS Downgrade Prevention',
-        protocol: mtaStsPass ? 'Strict Transport Security Active' : 'No MTA-STS Policy Detected',
-        metric: mtaStsPass ? '100%' : '30%',
-        progress: mtaStsPass ? 100 : 30
+        protocol: mtaStsCheck
+          ? mtaStsCheck.status === 'pass'
+            ? 'Strict Transport Security Active'
+            : mtaStsCheck.status === 'warn'
+              ? 'Policy present but not enforcing'
+              : mtaStsCheck.status === 'fail'
+                ? 'No MTA-STS Policy Detected'
+                : 'Check reported without status'
+          : 'MTA-STS check not reported',
+        metric: mtaStsScore === null ? 'N/A' : `${mtaStsScore}%`,
+        progress: mtaStsScore ?? 0,
+        unknown: mtaStsScore === null
       }
     ],
     encrypt: [
       {
         id: '1',
         name: 'Symmetric Cipher Pipeline',
-        protocol: cipher?.name || 'AES-256-GCM',
-        metric: `${cipher?.bits || 256} BITS`,
-        progress: (cipher?.bits || 256) >= 256 ? 100 : (cipher?.bits || 128) >= 128 ? 75 : 40
+        protocol: cipherSuite || 'No cipher reported',
+        metric: cipher?.bits != null ? `${cipher.bits} BITS` : 'N/A',
+        progress: cipher?.bits != null ? (cipher.bits >= 256 ? 100 : cipher.bits >= 128 ? 75 : 40) : 0,
+        unknown: cipher?.bits == null
       },
       {
         id: '2',
         name: 'Key Exchange Mechanism',
-        protocol: cipher?.key_exchange || 'ECDHE / X25519',
-        metric: fsSupported ? 'PFS OK' : 'STATIC',
-        progress: fsSupported ? 100 : 15
+        protocol: cipher?.key_exchange || 'No key exchange data reported',
+        metric: forwardSecrecy === true ? 'PFS OK' : forwardSecrecy === false ? 'STATIC' : 'N/A',
+        progress: forwardSecrecy === true ? 100 : forwardSecrecy === false ? 15 : 0,
+        unknown: forwardSecrecy === null
       },
       {
         id: '3',
         name: 'Certificate Signature Algorithm',
-        protocol: cert?.signature_algorithm || 'sha256WithRSAEncryption',
-        metric: cert?.signature_algorithm?.toLowerCase().includes('sha1') ? 'DEPRECATED' : 'FIPS OK',
-        progress: cert?.signature_algorithm?.toLowerCase().includes('sha1') ? 20 : 100
+        protocol: signatureAlgorithm || 'No certificate signature reported',
+        metric: signatureAlgorithm
+          ? signatureAlgorithm.toLowerCase().includes('sha1')
+            ? 'DEPRECATED'
+            : 'FIPS OK'
+          : 'N/A',
+        progress: signatureAlgorithm ? (signatureAlgorithm.toLowerCase().includes('sha1') ? 20 : 100) : 0,
+        unknown: !signatureAlgorithm
       },
       {
         id: '4',
         name: 'Public Key Exponent & Curve',
-        protocol: `${cert?.public_key_algorithm || 'RSA'} (${cert?.key_size_bits || 2048} bits)`,
-        metric: (cert?.key_size_bits || 2048) >= 2048 ? '100%' : '50%',
-        progress: (cert?.key_size_bits || 2048) >= 2048 ? 100 : 50
+        protocol: cert
+          ? `${cert.public_key_algorithm || 'Algorithm not reported'}${cert.key_size_bits != null ? ` (${cert.key_size_bits} bits)` : ''}`
+          : 'No certificate key data reported',
+        metric: keyStrength === null ? 'N/A' : `${keyStrength}%`,
+        progress: keyStrength ?? 0,
+        unknown: keyStrength === null
       }
     ],
     decrypt: [
       {
         id: '1',
         name: 'X.509 Chain Trust Validator',
-        protocol: cert?.chain_valid !== false ? 'Trusted System Root CA' : 'Untrusted / Incomplete Chain',
-        metric: cert?.chain_valid !== false ? 'TRUSTED' : 'UNTRUSTED',
-        progress: cert?.chain_valid !== false ? 100 : 10
+        protocol: cert
+          ? cert.chain_valid === true
+            ? 'Trusted System Root CA'
+            : cert.chain_valid === false
+              ? 'Untrusted / Incomplete Chain'
+              : 'Chain validation not reported'
+          : 'No certificate data reported',
+        metric: cert ? (cert.chain_valid === true ? 'TRUSTED' : cert.chain_valid === false ? 'UNTRUSTED' : 'N/A') : 'N/A',
+        progress: cert ? (cert.chain_valid === true ? 100 : cert.chain_valid === false ? 10 : 0) : 0,
+        unknown: !cert || cert.chain_valid == null
       },
       {
         id: '2',
         name: 'Certificate Issuer CN',
-        protocol: cert?.issuer_cn || cert?.issuer_dn || 'DigiCert Global Root CA',
-        metric: 'VALID',
-        progress: 100
+        protocol: issuer || 'Issuer not reported',
+        metric: issuer ? 'REPORTED' : 'N/A',
+        progress: issuer ? 100 : 0,
+        unknown: !issuer
       },
       {
         id: '3',
         name: 'Subject CN Matching',
-        protocol: cert?.subject_cn || cert?.subject_dn || 'Domain Common Name',
-        metric: cert?.matches_domain !== false ? 'MATCH' : 'MISMATCH',
-        progress: cert?.matches_domain !== false ? 100 : 30
+        protocol: subject || 'Subject not reported',
+        metric: cert ? (cert.matches_domain === true ? 'MATCH' : cert.matches_domain === false ? 'MISMATCH' : 'N/A') : 'N/A',
+        progress: cert ? (cert.matches_domain === true ? 100 : cert.matches_domain === false ? 30 : 0) : 0,
+        unknown: !cert || cert.matches_domain == null
       },
       {
         id: '4',
         name: 'Certificate Expiry Lifetime',
-        protocol: cert ? `${cert.days_until_expiry} days remaining` : 'Active Term',
-        metric: cert?.is_expired ? 'EXPIRED' : `${cert?.days_until_expiry ?? 90}d`,
-        progress: cert?.is_expired ? 0 : Math.min(100, Math.max(10, ((cert?.days_until_expiry ?? 90) / 365) * 100))
+        protocol: cert
+          ? cert.is_expired
+            ? `Expired ${Math.abs(cert.days_until_expiry)} days ago`
+            : Number.isFinite(cert.days_until_expiry)
+              ? `${cert.days_until_expiry} days remaining`
+              : 'Expiry not reported'
+          : 'No certificate data reported',
+        metric: cert ? (cert.is_expired ? 'EXPIRED' : Number.isFinite(cert.days_until_expiry) ? `${cert.days_until_expiry}d` : 'N/A') : 'N/A',
+        progress: cert && !cert.is_expired && Number.isFinite(cert.days_until_expiry)
+          ? Math.min(100, Math.max(10, (cert.days_until_expiry / 365) * 100))
+          : 0,
+        unknown: !cert || !Number.isFinite(cert.days_until_expiry)
       }
     ]
   };
@@ -138,24 +213,24 @@ export const KeyProtocolCard: React.FC<KeyProtocolCardProps> = ({
   const currentRows = rows[activeMode];
 
   return (
-    <div className="rounded-xl bg-slate-900/60 dark:bg-[#111726] border border-slate-800/80 p-4 transition-colors flex flex-col justify-between">
+    <div className={`${className} bg-slate-50 dark:bg-slate-900/80 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-800/80 rounded-xl p-5 shadow-lg shadow-black/10 dark:shadow-black/20 hover:border-cyan-500/50 transition-all duration-200 flex flex-col justify-between`}>
       {/* Top Bar: Mode Switcher */}
-      <div className="flex items-center justify-between gap-2 mb-3">
-        <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-semibold">
-          Key Protocol / Mode
+      <div className="flex items-center justify-between gap-2 mb-4">
+        <span className="text-[11px] font-semibold tracking-widest text-slate-600 dark:text-slate-400 uppercase">
+          Key Protocol Monitor
         </span>
 
         {/* 3 Pill buttons: Adopt All, Encrypt, Decrypt */}
-        <div className="flex items-center p-0.5 rounded-lg bg-slate-800/80 border border-slate-700/80 text-xs font-mono">
+        <div className="flex items-center p-0.5 rounded-lg bg-slate-100 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 text-xs font-mono">
           {(['adopt', 'encrypt', 'decrypt'] as KeyMode[]).map((mode) => (
             <button
               key={mode}
               type="button"
               onClick={() => handleModeClick(mode)}
-              className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors capitalize ${
+              className={`px-2.5 py-1 rounded text-[11px] font-semibold transition-colors tracking-wide uppercase ${
                 activeMode === mode
-                  ? 'bg-blue-600 text-white font-semibold'
-                  : 'text-slate-400 hover:text-slate-200'
+                  ? 'bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border border-cyan-500/40'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 border border-transparent'
               }`}
             >
               {mode === 'adopt' ? 'Adopt All' : mode}
@@ -165,47 +240,71 @@ export const KeyProtocolCard: React.FC<KeyProtocolCardProps> = ({
       </div>
 
       {/* Hairline Divided Table */}
-      <div className="divide-y divide-slate-800/60 font-mono text-xs">
-        {currentRows.map((row) => (
-          <div
-            key={row.id}
-            className="py-2 flex items-center justify-between gap-3 hover:bg-slate-800/30 px-1 rounded transition-colors"
-          >
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0"></span>
-                <span className="font-semibold text-slate-200 truncate text-[11px]">
-                  {row.name}
+      <div className="divide-y divide-slate-200 dark:divide-slate-800/60 font-mono text-[11px] py-1">
+        {currentRows.map((row) => {
+          const barColor = row.unknown
+            ? '#64748b'
+            : row.progress >= 80
+              ? '#00f0ff'
+              : row.progress >= 60
+                ? '#10b981'
+                : row.progress >= 30
+                  ? '#f59e0b'
+                  : '#ef4444';
+          return (
+            <div
+              key={row.id}
+              className="py-2.5 flex items-center justify-between gap-3 hover:bg-slate-100 dark:hover:bg-slate-800/40 px-1.5 rounded transition-colors"
+            >
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span
+                    className="w-1.5 h-1.5 rounded-full shrink-0"
+                    style={{
+                      backgroundColor: barColor,
+                      boxShadow: `0 0 6px ${barColor}66`
+                    }}
+                  ></span>
+                  <span className="font-semibold text-slate-900 dark:text-slate-100 truncate text-[12px] font-sans">
+                    {row.name}
+                  </span>
+                </div>
+                <span className="text-[10px] text-cyan-700 dark:text-cyan-400/90 truncate block pl-3.5 tracking-wider">
+                  {row.protocol}
                 </span>
               </div>
-              <span className="text-[10px] text-slate-400 truncate block pl-3">
-                {row.protocol}
-              </span>
-            </div>
 
-            <div className="flex items-center gap-3 shrink-0">
-              <div className="w-16 sm:w-20 h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-blue-500 transition-all duration-300"
-                  style={{ width: `${row.progress}%` }}
-                />
+              <div className="flex items-center gap-3 shrink-0">
+                <div className="w-16 sm:w-20 h-1.5 rounded-full bg-slate-200 dark:bg-slate-950 overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{
+                      width: `${row.unknown ? 0 : row.progress}%`,
+                      background: `linear-gradient(90deg, ${barColor}bb, ${barColor})`,
+                      boxShadow: `0 0 6px ${barColor}55`
+                    }}
+                  />
+                </div>
+                <span
+                  className={`text-[11px] font-semibold w-16 text-right tracking-wider ${
+                    row.unknown ? 'text-slate-400' : row.progress >= 80 ? 'text-cyan-400/90' : row.progress >= 30 ? 'text-amber-400' : 'text-rose-400'
+                  }`}
+                >
+                  {row.metric}
+                </span>
               </div>
-              <span className="text-xs font-semibold text-slate-200 w-16 text-right">
-                {row.metric}
-              </span>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Footer */}
-      <div className="mt-2 pt-2 border-t border-slate-800/80 text-[10px] font-mono text-slate-400 flex items-center justify-between">
-        <span>CIPHER SYNC: {cipher?.name ? cipher.name.slice(0, 18) : 'RFC 8446'}</span>
-        <span className="text-emerald-400 font-medium">
-          {score !== null && score !== undefined ? `SCORE: ${score}/100` : 'ACTIVE PROBE'}
+      <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800/60 text-[10px] font-mono text-slate-600 dark:text-slate-400 flex items-center justify-between">
+        <span className="tracking-wider uppercase">Cipher Sync: {cipherSuite ? cipherSuite.slice(0, 22) : 'Awaiting scan'}</span>
+        <span className="text-emerald-400 font-semibold tracking-widest uppercase">
+          {activeScore !== null && activeScore !== undefined ? `Score: ${activeScore}/100` : 'No Score Reported'}
         </span>
       </div>
     </div>
   );
 };
-

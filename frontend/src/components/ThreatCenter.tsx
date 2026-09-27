@@ -15,9 +15,12 @@ import {
   Layers
 } from 'lucide-react';
 import { Logo } from './Logo';
+import { CvssMetrics, ScanResponse } from '../types';
 
 interface ThreatCenterProps {
-  score?: number; // 0 to 100 (posture score)
+  className?: string;
+  score?: number | null; // 0 to 100 (posture score); null when no scan has completed
+  scanData?: ScanResponse | null;
   domain?: string;
   fuzzyScore?: number | null;
   linguisticClassification?: 'EXCELLENT' | 'GOOD' | 'ACCEPTABLE' | 'POOR' | 'CRITICAL';
@@ -31,33 +34,75 @@ interface ThreatCenterProps {
   };
   activatedRules?: string[];
   defuzzificationConfidence?: number;
+  cvssMetrics?: CvssMetrics;
   onOpenReportModal?: () => void;
   onSelectCredentialNode?: (nodeId: string) => void;
   onOpenAiFindings?: () => void;
 }
 
 export const ThreatCenter: React.FC<ThreatCenterProps> = ({
-  score = 85,
+  className = '',
+  score = null,
+  scanData,
   domain = 'gmail.com',
   fuzzyScore,
   linguisticClassification,
   antecedentScores,
   activatedRules,
   defuzzificationConfidence,
+  cvssMetrics,
   onOpenReportModal,
   onSelectCredentialNode,
   onOpenAiFindings
 }) => {
   const [activeNode, setActiveNode] = useState<string | null>(null);
   const [showRules, setShowRules] = useState(false);
+  const activeScore = scanData?.security_score ?? scanData?.score ?? score ?? null;
+  const primaryCert = scanData?.crypto_posture?.protocols_audited?.[0]?.tls_handshake?.certificate ?? null;
+  const certificateExpiry = primaryCert?.valid_until ?? primaryCert?.valid_to;
+  const dkimCheck = scanData?.checks?.find((c) => c.name.toLowerCase().includes('dkim')) ?? null;
+  const mtaStsCheck = scanData?.checks?.find((c) => c.name.toLowerCase().includes('mta-sts')) ?? null;
+  const pqcEvaluated = scanData?.crypto_posture?.pqc_indicators_evaluated === true;
+  const certSubject = primaryCert?.subject_cn || primaryCert?.subject_dn || null;
+  const certIdentifier = certSubject
+    ?? (primaryCert?.sha256_fingerprint
+      ? `${primaryCert.sha256_fingerprint.slice(0, 10)}…${primaryCert.sha256_fingerprint.slice(-4)}`
+      : null);
+  const chainBadge = primaryCert
+    ? primaryCert.chain_valid === true
+      ? { label: 'CHAIN VALID', badgeClass: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' }
+      : primaryCert.chain_valid === false
+        ? { label: 'UNTRUSTED', badgeClass: 'bg-rose-500/10 border-rose-500/30 text-rose-400' }
+        : { label: 'UNVERIFIED', badgeClass: 'bg-amber-500/10 border-amber-500/30 text-amber-400' }
+    : { label: 'NO DATA', badgeClass: 'bg-slate-500/10 border-slate-500/30 text-slate-400' };
+  const dkimSelector = typeof dkimCheck?.details?.selector === 'string' ? dkimCheck.details.selector : null;
+  const dkimKeySize = typeof dkimCheck?.details?.key_size === 'number' ? dkimCheck.details.key_size : null;
+  const dkimDetail = dkimCheck
+    ? [dkimSelector ? `Selector ${dkimSelector}` : null, dkimKeySize ? `${dkimKeySize}-bit key` : null]
+        .filter(Boolean)
+        .join(' · ') || 'Details not reported'
+    : 'No Credential Data';
+  const dkimBadge = dkimCheck
+    ? dkimCheck.status === 'pass'
+      ? { label: 'ACTIVE', badgeClass: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' }
+      : dkimCheck.status === 'warn'
+        ? { label: 'WARN', badgeClass: 'bg-amber-500/10 border-amber-500/30 text-amber-400' }
+        : dkimCheck.status === 'fail'
+          ? { label: 'FAIL', badgeClass: 'bg-rose-500/10 border-rose-500/30 text-rose-400' }
+          : { label: 'UNKNOWN', badgeClass: 'bg-slate-500/10 border-slate-500/30 text-slate-300' }
+    : { label: 'NO DATA', badgeClass: 'bg-slate-500/10 border-slate-500/30 text-slate-400' };
 
   // Speedometer calculation:
   // Mathematical formula: angle = (risk / 100) * 180 - 90
   // Low risk (0-30%) sits in the Emerald segment on the left (-90° to -36°)
   // Moderate risk (31-70%) sits in the Amber segment (-36° to +36°)
   // High risk (71-100%) sits in the Rose segment (+36° to +90°)
-  const effectiveScore = fuzzyScore !== undefined && fuzzyScore !== null ? Math.round(fuzzyScore) : score;
-  const risk = Math.max(0, Math.min(100, 100 - effectiveScore));
+  const resolvedScore = typeof activeScore === 'number' && Number.isFinite(activeScore)
+    ? activeScore
+    : fuzzyScore !== undefined && fuzzyScore !== null
+      ? Math.round(fuzzyScore)
+      : null;
+  const risk = resolvedScore === null ? 0 : Math.max(0, Math.min(100, 100 - resolvedScore));
   const angle = (risk / 100) * 180 - 90;
 
   // Linguistic status badge evaluation
@@ -76,14 +121,21 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
           return { label: 'FIS: CRITICAL RISK', textColor: 'text-rose-400', bgColor: 'bg-rose-500/10 border-rose-500/30' };
       }
     }
-    if (score >= 80) {
+    if (resolvedScore === null) {
       return {
-        label: 'Low Risk · PQC Compliant',
+        label: 'Awaiting Scan Data',
+        textColor: 'text-slate-400',
+        bgColor: 'bg-slate-500/10 border-slate-500/30'
+      };
+    }
+    if (resolvedScore >= 80) {
+      return {
+        label: pqcEvaluated ? 'Low Risk · PQC Evaluated' : 'Low Risk · PQC Not Evaluated',
         textColor: 'text-emerald-400',
         bgColor: 'bg-emerald-500/10 border-emerald-500/30'
       };
     }
-    if (score >= 60) {
+    if (resolvedScore >= 60) {
       return {
         label: 'Moderate Risk · Advisory',
         textColor: 'text-amber-400',
@@ -100,7 +152,16 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
   const badge = getClassificationBadge();
 
   return (
-    <div className="rounded-xl bg-slate-900/60 dark:bg-[#111726] border border-slate-800/80 p-5 overflow-hidden transition-colors">
+    <div className={`${className} bg-slate-50 dark:bg-slate-900/80 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-800/80 rounded-xl p-5 shadow-lg shadow-black/10 dark:shadow-black/20 hover:border-cyan-500/50 transition-all duration-200 overflow-hidden`}>
+      {cvssMetrics && (
+        <div className="mb-5 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 font-mono text-xs text-amber-100" aria-label="CVSS vulnerability metrics">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-full border border-amber-400/40 bg-amber-400/10 px-2 py-1 font-bold tracking-wide text-amber-300">CVSS {cvssMetrics.base_score} · {cvssMetrics.severity}</span>
+            <span className="break-all text-slate-300">{cvssMetrics.vector_string}</span>
+          </div>
+        </div>
+      )}
+
       {/* 3-Column Enterprise SOC Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
         
@@ -129,22 +190,22 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
                   <div className="text-xs font-semibold text-slate-100 font-sans tracking-tight">
                     Identity Credential
                   </div>
-                  <div className="text-[10px] font-mono text-slate-400">
-                    ID: 0x94F2...88A1
+                  <div className="text-[10px] font-mono text-slate-400 truncate max-w-[190px]" title={certIdentifier ?? undefined}>
+                    {certIdentifier ?? 'No Credential Data'}
                   </div>
                 </div>
               </div>
 
-              {/* Verified Badge */}
-              <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
-                <CheckCircle2 size={11} className="text-emerald-400" />
-                <span className="text-[9px] font-mono font-medium">VERIFIED</span>
+              {/* Chain status badge — only claims what the scan reported */}
+              <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded border ${chainBadge.badgeClass}`}>
+                <CheckCircle2 size={11} />
+                <span className="text-[9px] font-mono font-medium">{chainBadge.label}</span>
               </div>
             </div>
 
             <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] font-mono text-slate-400">
-              <span>X.509 v3 Client Cert</span>
-              <span className="text-slate-300">Valid: 2027</span>
+              <span>{primaryCert ? 'X.509 Certificate' : 'X.509 Certificate — none reported'}</span>
+              <span className="text-slate-700 dark:text-slate-300">Expiry: {certificateExpiry ? new Date(certificateExpiry).toLocaleDateString() : 'Unknown'}</span>
             </div>
           </button>
 
@@ -170,21 +231,23 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
                   <div className="text-xs font-semibold text-slate-100 font-sans tracking-tight">
                     DKIM / MTA-STS Policy
                   </div>
-                  <div className="text-[10px] font-mono text-slate-400">
-                    Ed25519-PQC Dual Signed
+                  <div className="text-[10px] font-mono text-slate-400 truncate max-w-[190px]" title={dkimDetail}>
+                    {dkimDetail}
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
-                <CheckCircle2 size={11} className="text-emerald-400" />
-                <span className="text-[9px] font-mono font-medium">ACTIVE</span>
+              <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded border ${dkimBadge.badgeClass}`}>
+                <CheckCircle2 size={11} />
+                <span className="text-[9px] font-mono font-medium">{dkimBadge.label}</span>
               </div>
             </div>
 
             <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] font-mono text-slate-400">
-              <span>SHA-256 Digest Match</span>
-              <span className="text-emerald-400 font-semibold">0 RFC Errors</span>
+              <span>{dkimCheck ? `${dkimCheck.name} Check` : 'No Check Data'}</span>
+              <span className={dkimCheck?.status === 'pass' ? 'text-emerald-400 font-semibold' : 'text-slate-400 font-semibold'}>
+                {dkimCheck ? dkimCheck.status.toUpperCase() : 'NO DATA'}
+              </span>
             </div>
           </button>
         </div>
@@ -195,12 +258,12 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
           {/* Centered SVG Speedometer Canvas (Radius 100, Stroke 14) */}
           <div className="relative w-64 h-36 flex items-end justify-center">
             <svg
-              viewBox="0 0 260 145"
+              viewBox="0 0 280 170"
               className="w-full h-full overflow-visible"
             >
               {/* Full Background Track Arc */}
               <path
-                d="M 30 120 A 100 100 0 0 1 230 120"
+                d="M 40 130 A 100 100 0 0 1 240 130"
                 fill="none"
                 stroke="#1e293b"
                 strokeWidth="14"
@@ -209,7 +272,7 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
 
               {/* Segment 1: Forest Emerald (0-30% Risk) */}
               <path
-                d="M 30 120 A 100 100 0 0 1 80 33.4"
+                d="M 40 130 A 100 100 0 0 1 90 43.4"
                 fill="none"
                 stroke="#10b981"
                 strokeWidth="14"
@@ -218,7 +281,7 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
 
               {/* Segment 2: Solid Amber (31-70% Risk) */}
               <path
-                d="M 86 29.5 A 100 100 0 0 1 174 29.5"
+                d="M 96 39.5 A 100 100 0 0 1 184 39.5"
                 fill="none"
                 stroke="#f59e0b"
                 strokeWidth="14"
@@ -226,7 +289,7 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
 
               {/* Segment 3: Deep Rose (71-100% Risk) */}
               <path
-                d="M 180 33.4 A 100 100 0 0 1 230 120"
+                d="M 190 43.4 A 100 100 0 0 1 240 130"
                 fill="none"
                 stroke="#f43f5e"
                 strokeWidth="14"
@@ -234,27 +297,25 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
               />
 
               {/* Scale Tick Markers (0, 50, 100) */}
-              <text x="25" y="140" fill="#64748b" fontSize="9" fontFamily="monospace" textAnchor="middle">0</text>
-              <text x="130" y="15" fill="#64748b" fontSize="9" fontFamily="monospace" textAnchor="middle">50</text>
-              <text x="235" y="140" fill="#64748b" fontSize="9" fontFamily="monospace" textAnchor="middle">100</text>
+              <text x="28" y="158" fill="#64748b" fontSize="9" fontFamily="monospace" textAnchor="middle">0</text>
+              <text x="140" y="13" fill="#64748b" fontSize="9" fontFamily="monospace" textAnchor="middle">50</text>
+              <text x="252" y="158" fill="#64748b" fontSize="9" fontFamily="monospace" textAnchor="middle">100</text>
 
-              {/* Precision Needle Pivot at (130, 120) */}
+              {/* Precision Needle Pivot at (140, 130) — only rendered when a score exists */}
+              {resolvedScore !== null && (
               <g
-                style={{
-                  transformOrigin: '130px 120px',
-                  transform: `rotate(${angle}deg)`,
-                  transition: 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)'
-                }}
+                transform={`rotate(${angle} 140 130)`}
               >
                 {/* Needle pointer */}
                 <polygon
-                  points="128,120 130,26 132,120"
+                  points="138,130 140,36 142,130"
                   fill="#f8fafc"
                 />
                 {/* Pivot disc */}
-                <circle cx="130" cy="120" r="9" fill="#090d16" stroke="#3b82f6" strokeWidth="2.5" />
-                <circle cx="130" cy="120" r="3.5" fill="#f8fafc" />
+                <circle cx="140" cy="130" r="9" fill="#0f172a" stroke="#3b82f6" strokeWidth="2.5" />
+                <circle cx="140" cy="130" r="3.5" fill="#f8fafc" />
               </g>
+              )}
             </svg>
           </div>
 
@@ -267,7 +328,8 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
             {/* Score & Label */}
             <div className="flex items-center gap-2">
               <span className="text-xl font-bold font-mono text-slate-100">
-                {score}<span className="text-slate-500 text-sm">/100</span>
+                {resolvedScore !== null ? resolvedScore : 'N/A'}
+                {resolvedScore !== null && <span className="text-slate-500 text-sm">/100</span>}
               </span>
             </div>
 
@@ -338,21 +400,21 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
             {/* Lock Badges */}
             <div
               className="absolute top-1 right-2 w-9 h-9 rounded-lg bg-slate-800/90 border border-slate-700 flex items-center justify-center text-slate-300 shadow-sm"
-              title="Autonomous TLS Downgrade Protection Active"
+              title={mtaStsCheck ? `MTA-STS policy status: ${mtaStsCheck.status.toUpperCase()}` : 'No MTA-STS policy data in this scan'}
             >
               <Lock size={14} className="text-slate-300" />
             </div>
 
             <div
               className="absolute bottom-1 right-2 w-9 h-9 rounded-lg bg-slate-800/90 border border-slate-700 flex items-center justify-center text-emerald-400 shadow-sm"
-              title="Quantum Key Distribution (QKD) Guard Active"
+              title={pqcEvaluated ? 'PQC indicators evaluated by the backend scan' : 'PQC indicators not evaluated by the backend scan'}
             >
               <ShieldCheck size={14} className="text-emerald-400" />
             </div>
           </div>
 
           <div className="mt-2 text-[10px] font-mono text-slate-400 text-center">
-            Autonomous Policy Guard Enforced
+            {scanData ? 'Policy view built from latest scan response' : 'Awaiting scan response'}
           </div>
         </div>
 
@@ -411,7 +473,7 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
                 id: 'pqc',
                 label: 'PQC Readiness',
                 value: antecedentScores.pqc_readiness,
-                desc: 'FIPS-203 Ready'
+                desc: antecedentScores.pqc_readiness >= 0.8 ? 'PQC Ready' : antecedentScores.pqc_readiness >= 0.4 ? 'Partial PQC' : 'Not PQC Ready'
               },
               {
                 id: 'auth',
@@ -423,7 +485,7 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
                 id: 'eli',
                 label: 'Vulnerability (ELI)',
                 value: 1.0 - antecedentScores.exploitation_likelihood, // Invert so 1.0 is safe/good
-                desc: antecedentScores.exploitation_likelihood <= 0.2 ? 'Zero Known CVEs' : 'Exposure Risk'
+                desc: antecedentScores.exploitation_likelihood <= 0.2 ? 'Low Exploit Likelihood' : 'Elevated Exploit Likelihood'
               }
             ].map((item) => {
               const pct = Math.round(item.value * 100);

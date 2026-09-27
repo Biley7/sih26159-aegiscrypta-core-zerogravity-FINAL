@@ -32,6 +32,7 @@ interface DockedTerminalProps {
   backendOnline?: boolean | null;
   domain?: string;
   score?: number | null;
+  apiBaseUrl?: string;
 }
 
 export const DockedTerminal: React.FC<DockedTerminalProps> = ({
@@ -41,9 +42,10 @@ export const DockedTerminal: React.FC<DockedTerminalProps> = ({
   height,
   onStartResize,
   onToggleHeight,
-  backendOnline = true,
+  backendOnline = null,
   domain = 'gmail.com',
-  score = null
+  score = null,
+  apiBaseUrl = ''
 }) => {
   const [copied, setCopied] = useState(false);
   const [commandInput, setCommandInput] = useState('');
@@ -160,16 +162,16 @@ export const DockedTerminal: React.FC<DockedTerminalProps> = ({
                 ? 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10'
                 : 'text-rose-400 border-rose-500/30 bg-rose-500/10'
             }`}>
-              {backendOnline ? '🟢 DAEMON CONNECTED (PORT 8000)' : '🔴 DAEMON DISCONNECTED (PORT 8000)'}
+              {`${backendOnline === true ? '🟢 DAEMON CONNECTED' : backendOnline === false ? '🔴 DAEMON UNREACHABLE' : '🟡 DAEMON CHECKING'}${apiBaseUrl ? ` · ${apiBaseUrl.replace(/^https?:\/\//, '')}` : ''}`}
             </span>
           </div>
 
           <div className="hidden lg:flex items-center gap-2 pl-3 border-l border-slate-800 text-[11px] text-slate-400">
-            <span>PORT 443</span>
+            <span>TARGET</span>
+            <span className="text-slate-300 font-mono">{domain}</span>
             <span className="text-slate-600">//</span>
-            <span className="text-slate-300">TLS 1.3 / ML-KEM-768</span>
-            <span className="text-slate-600">//</span>
-            <span className="text-slate-400">SESSION: #AEG-8492</span>
+            <span>SCORE</span>
+            <span className="text-slate-300 font-mono">{score !== null ? `${score}/100` : 'N/A'}</span>
           </div>
         </div>
 

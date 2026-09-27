@@ -20,9 +20,24 @@ interface SidebarProps {
   onSelectTab: (tab: NavItemKey) => void;
   onOpenSettings: () => void;
   onOpenCertificates?: () => void;
+  onStatusClick?: () => void;
   backendOnline?: boolean | null;
   isOpenMobile?: boolean;
   onCloseMobile?: () => void;
+  /** Real counts derived from the latest scan; null hides the badge. */
+  sessionCount?: number | null;
+  certificateCount?: number | null;
+  isStatusChecking?: boolean;
+}
+
+interface SidebarNavItem {
+  id: NavItemKey;
+  label: string;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+  badge?: string;
+  count?: number | null;
+  hasChildren?: boolean;
+  children?: { id: string; label: string; isCert?: boolean }[];
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -30,27 +45,31 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onSelectTab,
   onOpenSettings,
   onOpenCertificates,
-  backendOnline = true,
+  onStatusClick,
+  backendOnline = null,
   isOpenMobile = false,
-  onCloseMobile
+  onCloseMobile,
+  sessionCount = null,
+  certificateCount = null,
+  isStatusChecking = false
 }) => {
   const [isVerificationExpanded, setIsVerificationExpanded] = React.useState(true);
 
-  const navItems = [
+  const navItems: SidebarNavItem[] = [
     {
-      id: 'overview' as NavItemKey,
+      id: 'overview',
       label: 'Overview',
       icon: LayoutDashboard,
       badge: 'Live'
     },
     {
-      id: 'sessions' as NavItemKey,
+      id: 'sessions',
       label: 'Cryptographic Sessions',
       icon: Shield,
-      count: '300'
+      count: sessionCount
     },
     {
-      id: 'verification' as NavItemKey,
+      id: 'verification',
       label: 'Key Verification',
       icon: KeyRound,
       hasChildren: true,
@@ -61,10 +80,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ]
     },
     {
-      id: 'certificates' as NavItemKey,
+      id: 'certificates',
       label: 'Certificates',
       icon: FileCheck,
-      count: '12'
+      count: certificateCount
     }
   ];
 
@@ -139,7 +158,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         {item.badge}
                       </span>
                     )}
-                    {item.count && (
+                    {typeof item.count === 'number' && (
                       <span className="text-[11px] font-mono text-slate-400">
                         {item.count}
                       </span>
@@ -209,9 +228,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }`}></span>
               </span>
               <div className="flex flex-col">
-                <span className="text-[11px] font-semibold text-slate-200">Mesh Security</span>
-                <span className={`text-[9px] font-mono ${backendOnline ? 'text-emerald-400' : 'text-amber-400'}`}>
-                  {backendOnline ? '99.98% HEALTHY' : 'STANDBY MODE'}
+                <span className="text-[11px] font-semibold text-slate-200">API Health</span>
+                <span className={`text-[9px] font-mono ${backendOnline === true ? 'text-emerald-400' : backendOnline === false ? 'text-rose-400' : 'text-slate-400'}`}>
+                  {backendOnline === true ? 'ENDPOINT ONLINE' : backendOnline === false ? 'ENDPOINT UNREACHABLE' : 'CHECKING…'}
                 </span>
               </div>
             </div>
@@ -230,11 +249,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </button>
             <button
               type="button"
-              onClick={() => onSelectTab('overview')}
-              className="flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-lg text-xs font-medium text-slate-300 bg-slate-800/60 hover:bg-slate-800 hover:text-white border border-slate-700/60 active:scale-95 transition-all"
+              disabled={isStatusChecking}
+              onClick={() => {
+                onSelectTab('overview');
+                onStatusClick?.();
+              }}
+              className="flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-lg text-xs font-medium text-slate-300 bg-slate-800/60 hover:bg-slate-800 hover:text-white border border-slate-700/60 active:scale-95 transition-all disabled:opacity-60 disabled:cursor-wait"
+              title="Run a live GET /health probe against the configured endpoint"
             >
-              <Activity size={13} className="text-cyan-400" />
-              <span>Status</span>
+              <Activity size={13} className={`text-cyan-400 ${isStatusChecking ? 'animate-spin' : ''}`} />
+              <span>{isStatusChecking ? 'Checking…' : 'Status'}</span>
             </button>
           </div>
         </div>

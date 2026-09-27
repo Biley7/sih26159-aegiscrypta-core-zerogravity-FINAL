@@ -1,96 +1,35 @@
 import React from 'react';
 import { Route, ArrowUpRight } from 'lucide-react';
 import { CheckResult, CryptographicPosture } from '../types';
+import { buildSignalRows, signalColor } from '../scanMetrics';
 
 interface ChallengeRouteCardProps {
+  className?: string;
   checks?: CheckResult[];
   cryptoPosture?: CryptographicPosture | null;
   onExpand?: () => void;
 }
 
 export const ChallengeRouteCard: React.FC<ChallengeRouteCardProps> = ({
+  className = '',
   checks = [],
   cryptoPosture,
   onExpand
 }) => {
-  // Map audited endpoints and protocol probes into dynamic route telemetry
-  const auditedProtocols = cryptoPosture?.protocols_audited || [];
-
-  // Core probe categories to display
-  const routes = [
-    {
-      label: 'MX:25',
-      val: checks.some((c) => c.name.toLowerCase().includes('mx') && c.status === 'pass') ? 95 : 30,
-      protocol: 'SMTP STARTTLS'
-    },
-    {
-      label: 'S:465',
-      val: auditedProtocols.some((p) => p.port === 465) ? 90 : 80,
-      protocol: 'SMTPS Implicit'
-    },
-    {
-      label: 'S:587',
-      val: auditedProtocols.some((p) => p.port === 587) ? 88 : 75,
-      protocol: 'Submission'
-    },
-    {
-      label: 'SPF',
-      val: checks.some((c) => c.name.toLowerCase().includes('spf') && c.status === 'pass') ? 100 : 25,
-      protocol: 'SPF Policy'
-    },
-    {
-      label: 'DKIM',
-      val: checks.some((c) => c.name.toLowerCase().includes('dkim') && c.status === 'pass') ? 100 : 35,
-      protocol: 'DKIM Signature'
-    },
-    {
-      label: 'DMRC',
-      val: checks.some((c) => c.name.toLowerCase().includes('dmarc') && c.status === 'pass') ? 100 : 20,
-      protocol: 'DMARC Enforcement'
-    },
-    {
-      label: 'STS',
-      val: checks.some((c) => c.name.toLowerCase().includes('mta-sts') && c.status === 'pass') ? 95 : 30,
-      protocol: 'MTA-STS Policy'
-    },
-    {
-      label: 'TLS',
-      val: cryptoPosture?.protocols_audited?.[0]?.tls_handshake?.negotiated_version === 'TLSv1.3' ? 100 : 70,
-      protocol: 'TLS 1.3 Strict'
-    },
-    {
-      label: 'CIPH',
-      val: cryptoPosture?.weak_ciphers_found ? 30 : 95,
-      protocol: 'Cipher Strength'
-    },
-    {
-      label: 'PFS',
-      val: cryptoPosture?.forward_secrecy_supported ?? true ? 100 : 20,
-      protocol: 'Forward Secrecy'
-    },
-    {
-      label: 'CERT',
-      val: cryptoPosture?.protocols_audited?.[0]?.tls_handshake?.certificate?.chain_valid !== false ? 100 : 25,
-      protocol: 'X.509 Chain'
-    },
-    {
-      label: 'PQC',
-      val: cryptoPosture?.forward_secrecy_supported ? 90 : 40,
-      protocol: 'Quantum KEM'
-    }
-  ];
-
-  const totalProbes = routes.length;
-  const passedProbes = routes.filter((r) => r.val >= 70).length;
+  // Every bar maps to a check or protocol probe present in the scan response.
+  const signals = buildSignalRows(checks, cryptoPosture);
+  const totalProbes = signals.length;
+  const passedProbes = signals.filter((s) => s.value !== null && s.value >= 70).length;
+  const unknownProbes = signals.filter((s) => s.value === null).length;
 
   return (
-    <div className="rounded-xl bg-slate-900/60 dark:bg-[#111726] border border-slate-800/80 p-4 transition-colors flex flex-col justify-between">
+    <div className={`${className} bg-[#0c1220]/80 backdrop-blur-md border border-slate-800/80 rounded-xl p-5 shadow-lg shadow-black/20 hover:border-cyan-500/30 transition-all duration-200 flex flex-col justify-between`}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Route size={14} className="text-slate-400" />
-          <span className="text-xs font-semibold text-slate-100 tracking-tight font-sans">
-            Challenge Route &amp; Ingress Probes
+          <Route size={15} className="text-emerald-400" />
+          <span className="text-[11px] font-semibold tracking-widest text-slate-400 uppercase">
+            Challenge Routes · Ingress Probes
           </span>
         </div>
         <button
@@ -104,36 +43,49 @@ export const ChallengeRouteCard: React.FC<ChallengeRouteCardProps> = ({
       </div>
 
       {/* Bar Chart */}
-      <div className="h-26 flex items-end gap-1 px-1 pt-2 pb-1">
-        {routes.map((m, i) => (
-          <div key={i} className="flex-1 flex flex-col items-center gap-1 h-full justify-end group" title={`${m.protocol}: ${m.val}%`}>
-            <div className="w-full relative rounded-t-sm overflow-hidden bg-slate-800 flex items-end h-full">
-              <div
-                className={`w-full rounded-t-sm transition-all ${
-                  m.val >= 80
-                    ? 'bg-blue-500 group-hover:bg-blue-400'
-                    : m.val >= 60
-                    ? 'bg-amber-500 group-hover:bg-amber-400'
-                    : 'bg-rose-500 group-hover:bg-rose-400'
-                }`}
-                style={{ height: `${m.val}%` }}
-              />
-            </div>
-            <span className="text-[8px] font-mono text-slate-400 truncate max-w-full">
-              {m.label}
-            </span>
-          </div>
-        ))}
-      </div>
+      {totalProbes === 0 ? (
+        <div className="h-28 flex flex-col items-center justify-center gap-1 px-1 pt-2 pb-1 text-center">
+          <span className="text-[11px] font-mono text-slate-400 tracking-wider">INSUFFICIENT DATA</span>
+          <span className="text-[9px] font-mono text-slate-500 tracking-wider">
+            NO CHECKS OR PROTOCOL PROBES IN SCAN RESPONSE
+          </span>
+        </div>
+      ) : (
+        <div className="h-28 flex items-end gap-1 px-1 pt-2 pb-1">
+          {signals.map((m, i) => {
+            const c = signalColor(m.value);
+            return (
+              <div key={i} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end group" title={m.tooltip}>
+                <div className="w-full relative rounded-t-sm overflow-hidden bg-slate-900 flex items-end h-full">
+                  <div
+                    className="w-full rounded-t-sm transition-all duration-500 group-hover:brightness-125"
+                    style={{
+                      height: `${m.value ?? 0}%`,
+                      background: `linear-gradient(180deg, ${c}cc, ${c})`,
+                      boxShadow: m.value === null ? 'none' : `inset 0 1px 0 ${c}55, 0 0 6px ${c}44`
+                    }}
+                  />
+                </div>
+                <span className="text-[8px] font-mono text-cyan-400/80 truncate max-w-full tracking-wider">
+                  {m.label}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Footer Metrics */}
-      <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] font-mono text-slate-400">
-        <span>PROBE VECTORS: {totalProbes} RUN</span>
-        <span className="text-emerald-400 font-medium">
-          {passedProbes}/{totalProbes} OK
+      <div className="pt-3 border-t border-slate-800/60 flex items-center justify-between text-[10px] font-mono text-slate-400">
+        <span className="tracking-widest uppercase">
+          {totalProbes > 0 ? `${totalProbes} Signals Audited` : 'No Signals Audited'}
+        </span>
+        <span className={`font-semibold tracking-widest uppercase ${totalProbes === 0 ? 'text-slate-500' : 'text-emerald-400'}`}>
+          {totalProbes === 0
+            ? 'Insufficient Data'
+            : `${passedProbes}/${totalProbes} OK${unknownProbes > 0 ? ` · ${unknownProbes} N/A` : ''}`}
         </span>
       </div>
     </div>
   );
 };
-

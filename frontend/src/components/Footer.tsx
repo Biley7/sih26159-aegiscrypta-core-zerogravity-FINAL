@@ -13,11 +13,13 @@ import {
 
 interface FooterProps {
   onExportJson?: () => void;
+  apiBaseUrl?: string;
 }
 
 type ModalType = 'nist' | 'mta-sts' | 'tls-rpt' | 'pqc' | null;
 
-export const Footer: React.FC<FooterProps> = ({ onExportJson }) => {
+export const Footer: React.FC<FooterProps> = ({ onExportJson, apiBaseUrl = 'http://localhost:8000' }) => {
+  const docsUrl = `${apiBaseUrl.replace(/\/$/, '')}/docs`;
   const [activeModal, setActiveModal] = useState<ModalType>(null);
 
   const handleExportClick = () => {
@@ -131,11 +133,11 @@ export const Footer: React.FC<FooterProps> = ({ onExportJson }) => {
 
             <div className="flex flex-col gap-1.5 font-mono text-xs">
               <a
-                href="http://localhost:8000/docs"
+                href={docsUrl}
                 target="_blank"
                 rel="noreferrer"
                 className="flex items-center justify-center gap-2 px-3 py-1.5 rounded border border-border-primary bg-surface-secondary text-text-secondary hover:text-text-primary hover:bg-surface-elevated transition-colors"
-                title="View OpenAPI / Swagger documentation"
+                title={`View OpenAPI / Swagger documentation at ${docsUrl}`}
               >
                 <Code size={12} className="shrink-0" />
                 <span>OpenAPI Interactive Docs</span>

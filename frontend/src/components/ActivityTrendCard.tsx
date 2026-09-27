@@ -3,6 +3,7 @@ import { Activity, ChevronRight } from 'lucide-react';
 import { CheckResult, CryptographicPosture } from '../types';
 
 interface ActivityTrendCardProps {
+  className?: string;
   checks?: CheckResult[];
   score?: number | null;
   cryptoPosture?: CryptographicPosture | null;
@@ -18,46 +19,83 @@ interface ActivityTrendCardProps {
 }
 
 export const ActivityTrendCard: React.FC<ActivityTrendCardProps> = ({
+  className = '',
   checks = [],
   score,
   cryptoPosture,
   antecedentScores,
   onExpand
 }) => {
-  const total = checks.length || 1;
+  const total = checks.length;
   const passCount = checks.filter((c) => c.status === 'pass').length;
-  const cert = cryptoPosture?.protocols_audited?.[0]?.tls_handshake?.certificate;
+  const cert = cryptoPosture?.protocols_audited?.[0]?.tls_handshake?.certificate ?? null;
 
-  // Grade calculation
-  const effectiveScore = score !== null && score !== undefined ? score : 85;
-  const grade = effectiveScore >= 90 ? 'A' : effectiveScore >= 75 ? 'B' : effectiveScore >= 50 ? 'C' : 'F';
-  const gradeColor = effectiveScore >= 80 ? 'text-emerald-400' : effectiveScore >= 60 ? 'text-amber-400' : 'text-rose-400';
+  // Grade is only shown when the scan returned a score.
+  const hasScore = typeof score === 'number' && Number.isFinite(score);
+  const grade = hasScore ? (score >= 90 ? 'A' : score >= 75 ? 'B' : score >= 50 ? 'C' : 'F') : null;
+  const gradeColor = hasScore
+    ? score >= 80
+      ? 'text-emerald-400'
+      : score >= 60
+        ? 'text-amber-400'
+        : 'text-rose-400'
+    : 'text-slate-500';
+  const summary = hasScore
+    ? score >= 80
+      ? 'Latest scan landed in the healthy band. Score is response-derived.'
+      : 'Remediation advised based on the latest composite score.'
+    : 'Awaiting scan response — no posture score available.';
 
-  // Extract or compute metrics
-  const tlsScore = Math.round(antecedentScores?.tls_compliance ?? (cryptoPosture?.deprecated_tls_found ? 40 : 95));
-  const certScore = Math.round(antecedentScores?.certificate_health ?? (cert?.chain_valid !== false ? 95 : 30));
-  const emailScore = Math.round(antecedentScores?.email_auth_posture ?? Math.round((passCount / total) * 100));
+  // Metric values come from antecedent scores when present, otherwise from
+  // explicit posture booleans. Null means "not reported" and renders as N/A.
+  const tlsScore = antecedentScores?.tls_compliance != null
+    ? Math.round(antecedentScores.tls_compliance * 100)
+    : cryptoPosture?.deprecated_tls_found === true
+      ? 25
+      : cryptoPosture?.deprecated_tls_found === false
+        ? 100
+        : null;
+  const certScore = antecedentScores?.certificate_health != null
+    ? Math.round(antecedentScores.certificate_health * 100)
+    : cert?.chain_valid === true
+      ? 100
+      : cert?.chain_valid === false
+        ? 30
+        : cryptoPosture?.certificate_issues_found === true
+          ? 30
+          : cryptoPosture?.certificate_issues_found === false
+            ? 100
+            : null;
+  const emailScore = total > 0 ? Math.round((passCount / total) * 100) : null;
 
   const metrics = [
-    { label: 'TLS Protocol Enforcement', value: `${tlsScore}%`, progress: tlsScore, color: 'bg-blue-500' },
-    { label: 'X.509 Chain Health', value: `${certScore}%`, progress: certScore, color: certScore >= 70 ? 'bg-emerald-500' : 'bg-rose-500' },
-    { label: 'Email Auth (SPF/DMARC)', value: `${emailScore}%`, progress: emailScore, color: 'bg-indigo-500' }
+    { label: 'TLS Protocol Enforcement', value: tlsScore, color: 'bg-blue-500' },
+    { label: 'X.509 Chain Health', value: certScore, color: certScore !== null && certScore >= 70 ? 'bg-emerald-500' : 'bg-rose-500' },
+    { label: 'Email Auth (SPF/DMARC)', value: emailScore, color: 'bg-indigo-500' }
   ];
 
+  const chainLabel = cert
+    ? cert.chain_valid === true
+      ? 'Trusted'
+      : cert.chain_valid === false
+        ? 'Untrusted'
+        : 'Unverified'
+    : 'No Cert Data';
+
   return (
-    <div className="rounded-xl bg-slate-900/60 dark:bg-[#111726] border border-slate-800/80 p-4 transition-colors flex flex-col justify-between">
+    <div className={`${className} bg-[#0c1220]/80 backdrop-blur-md border border-slate-800/80 rounded-xl p-5 shadow-lg shadow-black/20 hover:border-cyan-500/30 transition-all duration-200 flex flex-col justify-between`}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Activity size={14} className="text-slate-400" />
-          <span className="text-xs font-semibold text-slate-100 tracking-tight font-sans">
-            Posture Trend &amp; Assurance
+          <Activity size={14} className="text-cyan-400" />
+          <span className="text-[11px] font-semibold tracking-widest text-slate-400 uppercase">
+            Posture Composition · Assurance
           </span>
         </div>
         <button
           type="button"
           onClick={onExpand}
-          className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors"
+          className="p-1 rounded hover:bg-slate-800/70 text-slate-400 hover:text-cyan-400 transition-colors"
           title="Inspect Activity Stream"
         >
           <ChevronRight size={15} />
@@ -65,47 +103,51 @@ export const ActivityTrendCard: React.FC<ActivityTrendCardProps> = ({
       </div>
 
       {/* Snippet: Badge + Description text */}
-      <div className="flex items-center gap-3 my-1 p-2 rounded-lg bg-slate-800/50 border border-slate-700/60">
-        <div className="w-9 h-9 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0">
-          <span className={`text-base font-bold font-mono ${gradeColor}`}>
-            {grade}
+      <div className="flex items-center gap-3 my-2 p-3 rounded-lg bg-slate-950/50 border border-slate-800">
+        <div className="w-10 h-10 rounded-lg bg-slate-900/60 border border-slate-800 flex items-center justify-center shrink-0 shadow-inner">
+          <span className={`text-lg font-bold font-mono tracking-wider ${gradeColor}`}>
+            {grade ?? '—'}
           </span>
         </div>
         <p className="text-[11px] text-slate-300 leading-snug font-sans">
-          {effectiveScore >= 80
-            ? 'Cryptographic posture meets zero-trust requirements across all audited MX endpoints.'
-            : 'Remediation advised to eliminate legacy cipher and email auth vulnerabilities.'}
+          {summary}
         </p>
       </div>
 
       {/* Comparative Progress Bars */}
-      <div className="space-y-2 mt-2 font-mono text-xs">
-        {metrics.map((m, idx) => (
-          <div key={idx} className="flex items-center justify-between gap-3">
-            <span className="text-[10px] text-slate-400 font-sans truncate flex-1">
-              {m.label}
-            </span>
-            <div className="w-20 h-1.5 rounded-full bg-slate-800 overflow-hidden shrink-0">
-              <div
-                className={`h-full rounded-full ${m.color} transition-all duration-300`}
-                style={{ width: `${m.progress}%` }}
-              />
+      <div className="space-y-3 mt-1 font-mono text-[11px]">
+        {metrics.map((m, idx) => {
+          const barColor = m.value === null ? '#64748b' : idx === 0 ? '#00f0ff' : idx === 1 ? '#10b981' : '#f59e0b';
+          return (
+            <div key={idx} className="flex items-center justify-between gap-3">
+              <span className="text-[10px] text-slate-400 font-sans truncate flex-1 tracking-wide">
+                {m.label}
+              </span>
+              <div className="w-20 h-1.5 rounded-full bg-slate-900 overflow-hidden shrink-0">
+                <div
+                  className="h-full rounded-full transition-all duration-500"
+                  style={{
+                    width: `${m.value ?? 0}%`,
+                    background: `linear-gradient(90deg, ${barColor}99, ${barColor})`,
+                    boxShadow: m.value === null ? 'none' : `0 0 6px ${barColor}55`
+                  }}
+                />
+              </div>
+              <span className={`text-[10px] font-semibold w-10 text-right shrink-0 tracking-wider ${m.value === null ? 'text-slate-500' : 'text-cyan-400/90'}`}>
+                {m.value === null ? 'N/A' : `${m.value}%`}
+              </span>
             </div>
-            <span className="text-[10px] font-semibold text-slate-200 w-9 text-right shrink-0">
-              {m.value}
-            </span>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Footer */}
-      <div className="pt-2 mt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] font-mono text-slate-400">
-        <span>CHAIN: {cert?.chain_valid !== false ? 'TRUSTED' : 'UNTRUSTED'}</span>
-        <span className="text-emerald-400 font-medium">
-          {passCount}/{total} CHECKS PASS
+      <div className="pt-3 mt-2 border-t border-slate-800/60 flex items-center justify-between text-[10px] font-mono text-slate-400">
+        <span className="tracking-widest uppercase">Chain: {chainLabel}</span>
+        <span className={`font-semibold tracking-widest uppercase ${total > 0 ? 'text-emerald-400' : 'text-slate-500'}`}>
+          {total > 0 ? `${passCount}/${total} Checks Pass` : 'No Check Data'}
         </span>
       </div>
     </div>
   );
 };
-

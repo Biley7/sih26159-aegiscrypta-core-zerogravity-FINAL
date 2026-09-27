@@ -1,11 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Copy,
   Check,
   Code2,
-  Sparkles
+  Sparkles,
+  ChevronUp,
+  ChevronDown,
+  AlertTriangle,
+  ShieldAlert,
+  Target
 } from 'lucide-react';
-import { AiDetailLevel, FindingSeverity, ScanResponse, SecurityFinding } from '../types';
+import { AiDetailLevel, CvssMetrics, FindingSeverity, ScanResponse, SecurityFinding } from '../types';
 
 interface RemediationEngineProps {
   data: ScanResponse;
@@ -16,6 +21,48 @@ interface RemediationEngineProps {
 
 type ConfigTarget = 'DNS' | 'POSTFIX' | 'EXIM' | 'SENDMAIL' | 'SCRIPT';
 
+type FindingsSortKey = 'finding' | 'category' | 'severity' | 'cvss';
+type SortDir = 'asc' | 'desc';
+
+const SEVERITY_RANK: Record<FindingSeverity, number> = {
+  CRITICAL: 4,
+  HIGH: 3,
+  MEDIUM: 2,
+  LOW: 1,
+  INFO: 0,
+};
+
+const SEVERITY_TO_CVSS: Record<FindingSeverity, number> = {
+  CRITICAL: 9.0,
+  HIGH: 7.5,
+  MEDIUM: 5.0,
+  LOW: 2.5,
+  INFO: 0.1,
+};
+
+const cvssForFinding = (f: SecurityFinding, aggregate: CvssMetrics | undefined, idx: number): number => {
+  // When backend emits per-finding CVSS in the future, read it here.
+  // Today: blend aggregate scan CVSS with a per-finding severity-derived score.
+  if (f.severity && SEVERITY_TO_CVSS[f.severity] !== undefined) {
+    const derived = SEVERITY_TO_CVSS[f.severity];
+    if (aggregate && typeof aggregate.base_score === 'number') {
+      // Weight 60% finding severity + 40% aggregate posture CVSS (bounded 0.1..10)
+      const blended = Math.max(0.1, Math.min(10, derived * 0.6 + aggregate.base_score * 0.4));
+      return Number(blended.toFixed(1));
+    }
+    return derived;
+  }
+  return aggregate?.base_score ?? Number(idx.toFixed(1));
+};
+
+const cvssBadgeClass = (score: number): string => {
+  if (score >= 9.0) return 'text-rose-400 bg-rose-500/10 border-rose-500/30';
+  if (score >= 7.0) return 'text-orange-400 bg-orange-500/10 border-orange-500/30';
+  if (score >= 4.0) return 'text-amber-400 bg-amber-500/10 border-amber-500/30';
+  if (score >= 0.2) return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30';
+  return 'text-slate-400 bg-slate-500/10 border-slate-500/30';
+};
+
 export const RemediationEngine: React.FC<RemediationEngineProps> = ({
   data,
   selectedSeverity,
@@ -24,14 +71,62 @@ export const RemediationEngine: React.FC<RemediationEngineProps> = ({
 }) => {
   const [activeConfigTab, setActiveConfigTab] = useState<Record<string, ConfigTarget>>({});
   const [copiedSnippetId, setCopiedSnippetId] = useState<string | null>(null);
+  const [sortKey, setSortKey] = useState<FindingsSortKey>('severity');
+  const [sortDir, setSortDir] = useState<SortDir>('desc');
 
   const findings: SecurityFinding[] = data.prioritized_findings || [];
+  const cvssMetrics = data.cvss_metrics;
 
   // Filter findings by severity
   const filteredFindings = findings.filter((f) => {
     if (selectedSeverity === 'ALL') return true;
     return f.severity === selectedSeverity;
   });
+
+  // Sort findings based on current column + direction
+  const sortedFindings = useMemo(() => {
+    const rows = filteredFindings.map((f, idx) => ({ finding: f, idx }));
+    const dirMul = sortDir === 'asc' ? 1 : -1;
+    rows.sort((a, b) => {
+      let cmp = 0;
+      switch (sortKey) {
+        case 'finding':
+          cmp = a.finding.title.localeCompare(b.finding.title);
+          break;
+        case 'category':
+          cmp = (a.finding.category || '').localeCompare(b.finding.category || '');
+          break;
+        case 'severity':
+          cmp = (SEVERITY_RANK[a.finding.severity] ?? 0) - (SEVERITY_RANK[b.finding.severity] ?? 0);
+          break;
+        case 'cvss':
+          cmp = cvssForFinding(a.finding, cvssMetrics, a.idx) - cvssForFinding(b.finding, cvssMetrics, b.idx);
+          break;
+      }
+      if (cmp === 0) {
+        // Stable tiebreak: original index order
+        cmp = a.idx - b.idx;
+      }
+      return cmp * dirMul;
+    });
+    return rows.map((r) => r.finding);
+  }, [filteredFindings, sortKey, sortDir, cvssMetrics]);
+
+  const toggleSort = (key: FindingsSortKey) => {
+    if (sortKey === key) {
+      setSortDir((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortKey(key);
+      setSortDir(key === 'finding' || key === 'category' ? 'asc' : 'desc');
+    }
+  };
+
+  const SortIndicator = ({ forKey }: { forKey: FindingsSortKey }) => {
+    if (sortKey !== forKey) return <ChevronDown size={12} className="opacity-30 inline-block ml-1" />;
+    return sortDir === 'asc'
+      ? <ChevronUp size={12} className="text-cyan-400 inline-block ml-1" />
+      : <ChevronDown size={12} className="text-cyan-400 inline-block ml-1" />;
+  };
 
   const getTargetTab = (findingTitle: string): ConfigTarget => {
     return activeConfigTab[findingTitle] || 'DNS';
@@ -63,31 +158,31 @@ export const RemediationEngine: React.FC<RemediationEngineProps> = ({
     const isCert = finding.title.toLowerCase().includes('cert');
 
     return {
-      DNS: isDmarc
+      DNS: data.remediation_playbook?.bind_dns_zone ?? (isDmarc
         ? `; DMARC Strict Enforcement Record (RFC 7489)\n_dmarc.${domain}.  3600  IN  TXT  "v=DMARC1; p=reject; sp=reject; pct=100; rua=mailto:dmarc-reports@${domain}; ruf=mailto:forensics@${domain}; aspf=s; adkim=s"`
         : isSpf
         ? `; Authoritative Hardened SPF Record (RFC 7208)\n${domain}.  3600  IN  TXT  "v=spf1 mx -all"`
         : isDane
-        ? `; DANE TLSA Record for MX Port 25 (RFC 6698 / RFC 7672)\n_25._tcp.mail.${domain}.  3600  IN  TLSA  3 1 1 5a7f328b910488c5d129ee448a1fb39c623a49102e7c39aa60447e1198c00123`
+        ? `; DANE TLSA Record for MX Port 25 (RFC 6698 / RFC 7672)\n; IMPORTANT: Replace <INSERT_CERT_SHA256_FINGERPRINT> with your actual certificate SHA-256 hash before publishing.\n_25._tcp.mail.${domain}.  3600  IN  TLSA  3 1 1 <INSERT_CERT_SHA256_FINGERPRINT>`
         : isCert
         ? `; ACME DNS-01 Challenge Record for TLS Certificate Renewal\n_acme-challenge.mail.${domain}.  300  IN  TXT  "verification_token_here"`
-        : `; MTA-STS Discovery Policy Record (RFC 8461)\n_mta-sts.${domain}.  3600  IN  TXT  "v=STSv1; id=20260901T000000Z;"`,
+        : `; MTA-STS Discovery Policy Record (RFC 8461)\n_mta-sts.${domain}.  3600  IN  TXT  "v=STSv1; id=20260901T000000Z;"`),
 
-      POSTFIX: isTls
+      POSTFIX: data.remediation_playbook?.postfix_main_cf ?? (isTls
         ? `# /etc/postfix/main.cf - Defense Posture Hardening (NIST SP 800-52r2)\nsmtpd_tls_security_level = encrypt\nsmtp_tls_security_level = dane\nsmtpd_tls_mandatory_protocols = >=TLSv1.2\nsmtpd_tls_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1\nsmtpd_tls_mandatory_ciphers = high\nsmtpd_tls_exclude_ciphers = aNULL, eNULL, EXPORT, DES, RC4, MD5, PSK, 3DES\ntls_high_cipherlist = ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305\ntls_preempt_cipherlist = yes`
         : isDmarc || isSpf
         ? `# /etc/postfix/main.cf - Ingress Sender Authentication Milters\nsmtpd_milters = inet:127.0.0.1:8891, inet:127.0.0.1:8893\nnon_smtpd_milters = inet:127.0.0.1:8891, inet:127.0.0.1:8893\nmilter_default_action = accept`
-        : `# /etc/postfix/main.cf - MTA-STS Policy Daemon\nsmtp_tls_policy_maps = socketmap:inet:127.0.0.1:8461:postfix\nsmtpd_tls_cert_file = /etc/ssl/certs/mail_${domain}.crt\nsmtpd_tls_key_file = /etc/ssl/private/mail_${domain}.key`,
+        : `# /etc/postfix/main.cf - MTA-STS Policy Daemon\nsmtp_tls_policy_maps = socketmap:inet:127.0.0.1:8461:postfix\nsmtpd_tls_cert_file = /etc/ssl/certs/mail_${domain}.crt\nsmtpd_tls_key_file = /etc/ssl/private/mail_${domain}.key`),
 
-      EXIM: isTls
+      EXIM: data.remediation_playbook?.exim_conf ?? (isTls
         ? `# /etc/exim4/exim4.conf - Modern Cryptographic Hardening\ntls_advertise_hosts = *\ntls_require_ciphers = ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305\ntls_certificate = /etc/ssl/certs/${domain}.crt\ntls_privatekey = /etc/ssl/private/${domain}.key\nopenssl_options = +no_sslv2 +no_sslv3 +no_tlsv1 +no_tlsv1_1 +cipher_server_preference`
-        : `# /etc/exim4/exim4.conf - DKIM Signing Parameters\ndkim_domain = ${domain}\ndkim_selector = def2026\ndkim_private_key = /etc/exim4/dkim.key`,
+        : `# /etc/exim4/exim4.conf - DKIM Signing Parameters\ndkim_domain = ${domain}\ndkim_selector = def2026\ndkim_private_key = /etc/exim4/dkim.key`),
 
-      SENDMAIL: isTls
+      SENDMAIL: data.remediation_playbook?.sendmail_mc ?? (isTls
         ? `dnl # sendmail.mc - NIST SP 800-52r2 Compliant Ciphers\nLOCAL_CONFIG\nO CipherList=ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305\nO ServerSSLOptions=+SSL_OP_NO_SSLv2 +SSL_OP_NO_SSLv3 +SSL_OP_NO_TLSv1 +SSL_OP_NO_TLSv1_1 +SSL_OP_CIPHER_SERVER_PREFERENCE\nO ClientSSLOptions=+SSL_OP_NO_SSLv2 +SSL_OP_NO_SSLv3 +SSL_OP_NO_TLSv1 +SSL_OP_NO_TLSv1_1`
-        : `dnl # sendmail.mc - Milter Verification Filters\nINPUT_MAIL_FILTER(\`opendkim', \`S=inet:8891@localhost')\nINPUT_MAIL_FILTER(\`opendmarc', \`S=inet:8893@localhost')`,
+        : `dnl # sendmail.mc - Milter Verification Filters\nINPUT_MAIL_FILTER(\`opendkim', \`S=inet:8891@localhost')\nINPUT_MAIL_FILTER(\`opendmarc', \`S=inet:8893@localhost')`),
 
-      SCRIPT: `#!/usr/bin/env bash
+      SCRIPT: data.remediation_playbook?.shell_script ?? `#!/usr/bin/env bash
 # AegisCrypta Automated Mail Infrastructure Remediation Script
 # Target Domain: ${domain}
 set -euo pipefail
@@ -155,11 +250,170 @@ echo "[AegisCrypta] Hardening completed successfully."`
         </div>
       </div>
 
-      {/* Remediation Table */}
+      {/* Aggregate CVSS Metrics Banner */}
+      {cvssMetrics && (
+        <div className="mb-4 p-4 rounded-xl bg-[#0c1220]/80 backdrop-blur-md border border-slate-800/80 shadow-lg shadow-black/20 hover:border-cyan-500/30 transition-all duration-200 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-lg bg-slate-900/60 border border-slate-800 flex items-center justify-center shadow-inner">
+              <Target size={19} className="text-rose-400" />
+            </div>
+            <div>
+              <div className="text-[11px] font-semibold tracking-widest text-slate-400 uppercase">
+                CVSS v3.1 Risk Metrics · Aggregate Scan Posture
+              </div>
+              <div className="flex items-center gap-3 mt-1">
+                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded border font-mono text-xs font-bold ${cvssBadgeClass(cvssMetrics.base_score ?? 0)}`}>
+                  <ShieldAlert size={12} />
+                  Base Score · {(cvssMetrics.base_score ?? 0).toFixed(1)}
+                </span>
+                {cvssMetrics.severity && (
+                  <span className="font-mono text-xs text-cyan-400/90 font-semibold uppercase tracking-wider">
+                    Severity: {cvssMetrics.severity}
+                  </span>
+                )}
+                {cvssMetrics.vector_string && (
+                  <code className="hidden md:inline font-mono text-[10px] text-slate-400 ml-2 truncate max-w-xs" title={cvssMetrics.vector_string}>
+                    {cvssMetrics.vector_string}
+                  </code>
+                )}
+              </div>
+            </div>
+          </div>
+          {(cvssMetrics.exploitability_score !== undefined || cvssMetrics.impact_score !== undefined) && (
+            <div className="flex items-center gap-6 font-mono text-[11px]">
+              {cvssMetrics.exploitability_score !== undefined && (
+                <div className="text-right">
+                  <div className="text-slate-400 uppercase tracking-widest text-[10px]">Exploitability</div>
+                  <div className="text-amber-400 font-bold text-sm">{cvssMetrics.exploitability_score.toFixed(1)}</div>
+                </div>
+              )}
+              {cvssMetrics.impact_score !== undefined && (
+                <div className="text-right">
+                  <div className="text-slate-400 uppercase tracking-widest text-[10px]">Impact</div>
+                  <div className="text-rose-400 font-bold text-sm">{cvssMetrics.impact_score.toFixed(1)}</div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Sortable Findings Table */}
+      <div className="mb-5 rounded-xl overflow-hidden bg-[#0c1220]/80 backdrop-blur-md border border-slate-800/80 shadow-lg shadow-black/20 hover:border-cyan-500/30 transition-all duration-200">
+        <table className="w-full text-left font-mono">
+          <thead className="bg-slate-950/70 text-slate-400 uppercase text-[10px] tracking-widest border-b border-slate-800/90">
+            <tr>
+              <th className="px-5 py-3.5 w-[42%]">
+                <button
+                  type="button"
+                  onClick={() => toggleSort('finding')}
+                  className="flex items-center gap-1.5 hover:text-cyan-400 transition-colors font-semibold"
+                >
+                  <AlertTriangle size={13} className="text-amber-400" />
+                  Finding / Vulnerability
+                  <SortIndicator forKey="finding" />
+                </button>
+              </th>
+              <th className="px-5 py-3.5 w-[18%]">
+                <button
+                  type="button"
+                  onClick={() => toggleSort('category')}
+                  className="flex items-center gap-1.5 hover:text-cyan-400 transition-colors font-semibold"
+                >
+                  <Code2 size={13} className="text-[#00f0ff]" />
+                  Category
+                  <SortIndicator forKey="category" />
+                </button>
+              </th>
+              <th className="px-5 py-3.5 w-[18%]">
+                <button
+                  type="button"
+                  onClick={() => toggleSort('severity')}
+                  className="flex items-center gap-1.5 hover:text-cyan-400 transition-colors font-semibold"
+                >
+                  <ShieldAlert size={13} className="text-rose-400" />
+                  Severity
+                  <SortIndicator forKey="severity" />
+                </button>
+              </th>
+              <th className="px-5 py-3.5 w-[22%]">
+                <button
+                  type="button"
+                  onClick={() => toggleSort('cvss')}
+                  className="flex items-center gap-1.5 hover:text-cyan-400 transition-colors font-semibold"
+                >
+                  <Target size={13} className="text-emerald-400" />
+                  CVSS Score
+                  <SortIndicator forKey="cvss" />
+                </button>
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-800/60 text-[11px]">
+            {sortedFindings.length === 0 ? (
+              <tr>
+                <td colSpan={4} className="px-5 py-8 text-center text-slate-400">
+                  <Check size={16} className="mx-auto mb-2 text-emerald-400" />
+                  <span className="font-semibold text-slate-300">No findings match the current severity filter.</span>
+                </td>
+              </tr>
+            ) : (
+              sortedFindings.map((finding, idx) => {
+                const score = cvssForFinding(finding, cvssMetrics, idx);
+                return (
+                  <tr
+                    key={`${finding.title}-${idx}`}
+                    className="hover:bg-slate-800/40 transition-colors"
+                  >
+                    <td className="px-5 py-3.5 align-top">
+                      <div className="font-semibold text-slate-100 text-[12px] font-sans leading-snug">
+                        {finding.title}
+                      </div>
+                      {finding.description && (
+                        <div className="mt-1.5 text-[11px] text-slate-400 leading-tight line-clamp-2">
+                          {finding.description}
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-5 py-3.5 align-top">
+                      <span className="px-2 py-1 rounded bg-slate-900/60 border border-slate-800 text-cyan-400/90 uppercase tracking-wider text-[10px] font-semibold">
+                        {finding.category || 'Uncategorized'}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3.5 align-top">
+                      <span
+                        className={`inline-block px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider border ${getSeverityBadgeClass(finding.severity)}`}
+                      >
+                        {finding.severity}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3.5 align-top">
+                      <span
+                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-bold border ${cvssBadgeClass(score)}`}
+                      >
+                        <Target size={10} />
+                        {score.toFixed(1)}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+        {sortedFindings.length > 0 && (
+          <div className="px-5 py-2.5 border-t border-slate-800/90 bg-slate-950/80 text-[10px] text-slate-400 font-mono flex items-center justify-between">
+            <span className="tracking-wider uppercase">Showing {sortedFindings.length} Finding{sortedFindings.length === 1 ? '' : 's'}</span>
+            <span className="tracking-wider uppercase">Sorted by {sortKey.toUpperCase()} · {sortDir.toUpperCase()}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Remediation Cards (drilled detail snippets) */}
       <div className="remediation-table-container">
         {filteredFindings.length > 0 ? (
           <div className="remediation-list">
-            {filteredFindings.map((finding, idx) => {
+            {sortedFindings.map((finding, idx) => {
               const currentTab = getTargetTab(finding.title);
               const snippets = generateSnippets(finding, data.domain);
               const activeCode = snippets[currentTab];

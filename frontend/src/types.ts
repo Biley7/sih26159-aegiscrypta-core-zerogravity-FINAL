@@ -20,6 +20,7 @@ export interface CertificateInfo {
   serial_number: string;
   valid_from: string;
   valid_to: string;
+  valid_until?: string | null;
   days_until_expiry: number;
   is_expired: boolean;
   is_self_signed: boolean;
@@ -49,6 +50,8 @@ export interface CipherSuiteInfo {
 export interface TlsHandshakeResult {
   success: boolean;
   negotiated_version?: string | null;
+  tls_version?: string | null;
+  cipher_suite?: string | null;
   cipher?: CipherSuiteInfo | null;
   certificate?: CertificateInfo | null;
   alpn_selected?: string | null;
@@ -73,6 +76,7 @@ export interface CryptographicPosture {
   grade: string;
   protocols_audited: ProtocolAuditResult[];
   forward_secrecy_supported: boolean;
+  pqc_indicators_evaluated?: boolean;
   weak_ciphers_found: boolean;
   deprecated_tls_found: boolean;
   certificate_issues_found: boolean;
@@ -105,6 +109,7 @@ export interface CheckResult {
 export interface ScanResponse {
   domain: string;
   score: number;
+  security_score?: number | null;
   checks: CheckResult[];
   crypto_posture?: CryptographicPosture;
   ai_risk_score?: AiRiskScore;
