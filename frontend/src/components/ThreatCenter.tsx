@@ -74,7 +74,7 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
       : primaryCert.chain_valid === false
         ? { label: 'UNTRUSTED', badgeClass: 'bg-rose-500/10 border-rose-500/30 text-rose-400' }
         : { label: 'UNVERIFIED', badgeClass: 'bg-amber-500/10 border-amber-500/30 text-amber-400' }
-    : { label: 'NO DATA', badgeClass: 'bg-slate-500/10 border-slate-500/30 text-slate-400' };
+    : { label: 'NO DATA', badgeClass: 'bg-slate-500/10 border-slate-500/30 text-slate-500 dark:text-slate-400' };
   const dkimSelector = typeof dkimCheck?.details?.selector === 'string' ? dkimCheck.details.selector : null;
   const dkimKeySize = typeof dkimCheck?.details?.key_size === 'number' ? dkimCheck.details.key_size : null;
   const dkimDetail = dkimCheck
@@ -89,8 +89,8 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
         ? { label: 'WARN', badgeClass: 'bg-amber-500/10 border-amber-500/30 text-amber-400' }
         : dkimCheck.status === 'fail'
           ? { label: 'FAIL', badgeClass: 'bg-rose-500/10 border-rose-500/30 text-rose-400' }
-          : { label: 'UNKNOWN', badgeClass: 'bg-slate-500/10 border-slate-500/30 text-slate-300' }
-    : { label: 'NO DATA', badgeClass: 'bg-slate-500/10 border-slate-500/30 text-slate-400' };
+          : { label: 'UNKNOWN', badgeClass: 'bg-slate-500/10 border-slate-500/30 text-slate-500 dark:text-slate-300' }
+    : { label: 'NO DATA', badgeClass: 'bg-slate-500/10 border-slate-500/30 text-slate-500 dark:text-slate-400' };
 
   // Speedometer calculation:
   // Mathematical formula: angle = (risk / 100) * 180 - 90
@@ -110,41 +110,41 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
     if (linguisticClassification) {
       switch (linguisticClassification) {
         case 'EXCELLENT':
-          return { label: 'FIS: EXCELLENT POSTURE', textColor: 'text-emerald-400', bgColor: 'bg-emerald-500/10 border-emerald-500/30' };
+          return { label: 'FIS: EXCELLENT POSTURE', textColor: 'text-emerald-700 dark:text-emerald-400', bgColor: 'bg-emerald-500/10 border-emerald-500/30' };
         case 'GOOD':
-          return { label: 'FIS: GOOD POSTURE', textColor: 'text-teal-400', bgColor: 'bg-teal-500/10 border-teal-500/30' };
+          return { label: 'FIS: GOOD POSTURE', textColor: 'text-teal-700 dark:text-teal-400', bgColor: 'bg-teal-500/10 border-teal-500/30' };
         case 'ACCEPTABLE':
-          return { label: 'FIS: ACCEPTABLE POSTURE', textColor: 'text-amber-400', bgColor: 'bg-amber-500/10 border-amber-500/30' };
+          return { label: 'FIS: ACCEPTABLE POSTURE', textColor: 'text-amber-600 dark:text-amber-400', bgColor: 'bg-amber-500/10 border-amber-500/30' };
         case 'POOR':
-          return { label: 'FIS: POOR POSTURE', textColor: 'text-orange-400', bgColor: 'bg-orange-500/10 border-orange-500/30' };
+          return { label: 'FIS: POOR POSTURE', textColor: 'text-orange-600 dark:text-orange-400', bgColor: 'bg-orange-500/10 border-orange-500/30' };
         case 'CRITICAL':
-          return { label: 'FIS: CRITICAL RISK', textColor: 'text-rose-400', bgColor: 'bg-rose-500/10 border-rose-500/30' };
+          return { label: 'FIS: CRITICAL RISK', textColor: 'text-rose-600 dark:text-rose-400', bgColor: 'bg-rose-500/10 border-rose-500/30' };
       }
     }
     if (resolvedScore === null) {
       return {
         label: 'Awaiting Scan Data',
-        textColor: 'text-slate-400',
+        textColor: 'text-slate-500 dark:text-slate-400',
         bgColor: 'bg-slate-500/10 border-slate-500/30'
       };
     }
     if (resolvedScore >= 80) {
       return {
         label: pqcEvaluated ? 'Low Risk · PQC Evaluated' : 'Low Risk · PQC Not Evaluated',
-        textColor: 'text-emerald-400',
+        textColor: 'text-emerald-700 dark:text-emerald-400',
         bgColor: 'bg-emerald-500/10 border-emerald-500/30'
       };
     }
     if (resolvedScore >= 60) {
       return {
         label: 'Moderate Risk · Advisory',
-        textColor: 'text-amber-400',
+        textColor: 'text-amber-600 dark:text-amber-400',
         bgColor: 'bg-amber-500/10 border-amber-500/30'
       };
     }
     return {
       label: 'High Risk · Critical Action',
-      textColor: 'text-rose-400',
+      textColor: 'text-rose-600 dark:text-rose-400',
       bgColor: 'bg-rose-500/10 border-rose-500/30'
     };
   };
@@ -152,12 +152,12 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
   const badge = getClassificationBadge();
 
   return (
-    <div className={`${className} bg-slate-50 dark:bg-slate-900/80 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-800/80 rounded-xl p-5 shadow-lg shadow-black/10 dark:shadow-black/20 hover:border-cyan-500/50 transition-all duration-200 overflow-hidden`}>
+    <div className={`${className} bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-md p-5 hover:border-cyan-500/50 transition-colors overflow-hidden`}>
       {cvssMetrics && (
-        <div className="mb-5 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 font-mono text-xs text-amber-100" aria-label="CVSS vulnerability metrics">
+        <div className="mb-5 rounded border border-amber-500/30 bg-amber-500/10 p-3 font-mono text-xs text-amber-800 dark:text-amber-100" aria-label="CVSS vulnerability metrics">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full border border-amber-400/40 bg-amber-400/10 px-2 py-1 font-bold tracking-wide text-amber-300">CVSS {cvssMetrics.base_score} · {cvssMetrics.severity}</span>
-            <span className="break-all text-slate-300">{cvssMetrics.vector_string}</span>
+            <span className="rounded border border-amber-500/40 bg-amber-500/10 px-2 py-1 font-bold tracking-wide text-amber-700 dark:text-amber-300">CVSS {cvssMetrics.base_score} · {cvssMetrics.severity}</span>
+            <span className="break-all text-slate-600 dark:text-slate-300">{cvssMetrics.vector_string}</span>
           </div>
         </div>
       )}
@@ -175,22 +175,22 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
               setActiveNode('cred-1');
               if (onSelectCredentialNode) onSelectCredentialNode('cred-1');
             }}
-            className={`w-full text-left p-3.5 rounded-lg bg-slate-900/90 dark:bg-[#161f30] border transition-all duration-150 group active:scale-[0.99] ${
+            className={`w-full text-left p-3.5 rounded bg-slate-50 dark:bg-slate-800/60 border transition-colors duration-150 group active:scale-[0.99] ${
               activeNode === 'cred-1'
                 ? 'border-blue-500 ring-1 ring-blue-500/40'
-                : 'border-slate-800 hover:border-slate-700'
+                : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
             }`}
           >
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300">
+                <div className="w-8 h-8 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-300">
                   <UserCheck size={16} />
                 </div>
                 <div>
-                  <div className="text-xs font-semibold text-slate-100 font-sans tracking-tight">
+                  <div className="text-xs font-semibold text-slate-800 dark:text-slate-100 font-sans tracking-tight">
                     Identity Credential
                   </div>
-                  <div className="text-[10px] font-mono text-slate-400 truncate max-w-[190px]" title={certIdentifier ?? undefined}>
+                  <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400 truncate max-w-[190px]" title={certIdentifier ?? undefined}>
                     {certIdentifier ?? 'No Credential Data'}
                   </div>
                 </div>
@@ -203,9 +203,9 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
               </div>
             </div>
 
-            <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] font-mono text-slate-400">
+            <div className="mt-2.5 pt-2 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between text-[10px] font-mono text-slate-500 dark:text-slate-400">
               <span>{primaryCert ? 'X.509 Certificate' : 'X.509 Certificate — none reported'}</span>
-              <span className="text-slate-700 dark:text-slate-300">Expiry: {certificateExpiry ? new Date(certificateExpiry).toLocaleDateString() : 'Unknown'}</span>
+              <span className="text-slate-600 dark:text-slate-300">Expiry: {certificateExpiry ? new Date(certificateExpiry).toLocaleDateString() : 'Unknown'}</span>
             </div>
           </button>
 
@@ -216,22 +216,22 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
               setActiveNode('cred-2');
               if (onSelectCredentialNode) onSelectCredentialNode('cred-2');
             }}
-            className={`w-full text-left p-3.5 rounded-lg bg-slate-900/90 dark:bg-[#161f30] border transition-all duration-150 group active:scale-[0.99] ${
+            className={`w-full text-left p-3.5 rounded bg-slate-50 dark:bg-slate-800/60 border transition-colors duration-150 group active:scale-[0.99] ${
               activeNode === 'cred-2'
                 ? 'border-blue-500 ring-1 ring-blue-500/40'
-                : 'border-slate-800 hover:border-slate-700'
+                : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
             }`}
           >
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300">
+                <div className="w-8 h-8 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-300">
                   <FileKey2 size={16} />
                 </div>
                 <div>
-                  <div className="text-xs font-semibold text-slate-100 font-sans tracking-tight">
+                  <div className="text-xs font-semibold text-slate-800 dark:text-slate-100 font-sans tracking-tight">
                     DKIM / MTA-STS Policy
                   </div>
-                  <div className="text-[10px] font-mono text-slate-400 truncate max-w-[190px]" title={dkimDetail}>
+                  <div className="text-[10px] font-mono text-slate-500 dark:text-slate-400 truncate max-w-[190px]" title={dkimDetail}>
                     {dkimDetail}
                   </div>
                 </div>
@@ -243,9 +243,9 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
               </div>
             </div>
 
-            <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] font-mono text-slate-400">
+            <div className="mt-2.5 pt-2 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between text-[10px] font-mono text-slate-500 dark:text-slate-400">
               <span>{dkimCheck ? `${dkimCheck.name} Check` : 'No Check Data'}</span>
-              <span className={dkimCheck?.status === 'pass' ? 'text-emerald-400 font-semibold' : 'text-slate-400 font-semibold'}>
+              <span className={dkimCheck?.status === 'pass' ? 'text-emerald-700 dark:text-emerald-400 font-semibold' : 'text-slate-500 dark:text-slate-400 font-semibold'}>
                 {dkimCheck ? dkimCheck.status.toUpperCase() : 'NO DATA'}
               </span>
             </div>
@@ -255,81 +255,59 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
         {/* CENTER COLUMN: Re-Engineered Speedometer Gauge */}
         <div className="lg:col-span-4 flex flex-col items-center justify-center py-2">
           
-          {/* Centered SVG Speedometer Canvas (Radius 100, Stroke 14) */}
+          {/* Centered SVG Speedometer Canvas (Radius 100, Stroke 12) */}
           <div className="relative w-64 h-36 flex items-end justify-center">
             <svg
               viewBox="0 0 280 170"
-              className="w-full h-full overflow-visible"
+              className="w-full h-full"
+              role="img"
+              aria-label="Risk index half-dial"
             >
-              {/* Full Background Track Arc */}
+              {/* Full Background Track Arc — pivot (140,130), radius 100, stroke 12 */}
               <path
                 d="M 40 130 A 100 100 0 0 1 240 130"
                 fill="none"
-                stroke="#1e293b"
-                strokeWidth="14"
+                className="stroke-slate-200 dark:stroke-slate-800"
+                strokeWidth="12"
                 strokeLinecap="round"
               />
 
               {/* Segment 1: Forest Emerald (0-30% Risk) */}
-              <path
-                d="M 40 130 A 100 100 0 0 1 90 43.4"
-                fill="none"
-                stroke="#10b981"
-                strokeWidth="14"
-                strokeLinecap="round"
-              />
+              <path d="M 40 130 A 100 100 0 0 1 90 43.4" fill="none" stroke="#10b981" strokeWidth="12" strokeLinecap="round" />
 
               {/* Segment 2: Solid Amber (31-70% Risk) */}
-              <path
-                d="M 96 39.5 A 100 100 0 0 1 184 39.5"
-                fill="none"
-                stroke="#f59e0b"
-                strokeWidth="14"
-              />
+              <path d="M 96 39.5 A 100 100 0 0 1 184 39.5" fill="none" stroke="#f59e0b" strokeWidth="12" />
 
               {/* Segment 3: Deep Rose (71-100% Risk) */}
-              <path
-                d="M 190 43.4 A 100 100 0 0 1 240 130"
-                fill="none"
-                stroke="#f43f5e"
-                strokeWidth="14"
-                strokeLinecap="round"
-              />
+              <path d="M 190 43.4 A 100 100 0 0 1 240 130" fill="none" stroke="#f43f5e" strokeWidth="12" strokeLinecap="round" />
 
-              {/* Scale Tick Markers (0, 50, 100) */}
-              <text x="28" y="158" fill="#64748b" fontSize="9" fontFamily="monospace" textAnchor="middle">0</text>
-              <text x="140" y="13" fill="#64748b" fontSize="9" fontFamily="monospace" textAnchor="middle">50</text>
-              <text x="252" y="158" fill="#64748b" fontSize="9" fontFamily="monospace" textAnchor="middle">100</text>
+              {/* Scale tick markers — baselines clear the 12px arc stroke */}
+              <text x="30" y="156" className="fill-slate-500" fontSize="9" fontFamily="monospace" textAnchor="middle">0</text>
+              <text x="140" y="16" className="fill-slate-500" fontSize="9" fontFamily="monospace" textAnchor="middle">50</text>
+              <text x="250" y="156" className="fill-slate-500" fontSize="9" fontFamily="monospace" textAnchor="middle">100</text>
 
-              {/* Precision Needle Pivot at (140, 130) — only rendered when a score exists */}
+              {/* Needle pivot at (140,130); tip stays inside the arc inner edge */}
               {resolvedScore !== null && (
-              <g
-                transform={`rotate(${angle} 140 130)`}
-              >
-                {/* Needle pointer */}
-                <polygon
-                  points="138,130 140,36 142,130"
-                  fill="#f8fafc"
-                />
-                {/* Pivot disc */}
-                <circle cx="140" cy="130" r="9" fill="#0f172a" stroke="#3b82f6" strokeWidth="2.5" />
-                <circle cx="140" cy="130" r="3.5" fill="#f8fafc" />
-              </g>
+                <g transform={`rotate(${angle} 140 130)`}>
+                  <polygon points="138,130 140,42 142,130" className="fill-slate-700 dark:fill-slate-100" />
+                  <circle cx="140" cy="130" r="8" className="fill-white dark:fill-slate-900" stroke="#3b82f6" strokeWidth="2" />
+                  <circle cx="140" cy="130" r="3" className="fill-slate-400 dark:fill-slate-200" />
+                </g>
               )}
             </svg>
           </div>
 
           {/* Underneath Gauge: Risk Label, Score, and Clean Badge */}
           <div className="flex flex-col items-center text-center mt-1 space-y-1.5">
-            <span className="text-[10px] font-mono font-semibold tracking-wider text-slate-400 uppercase">
+            <span className="text-[10px] font-mono font-semibold tracking-wider text-slate-500 dark:text-slate-400 uppercase">
               RISK INDEX
             </span>
 
             {/* Score & Label */}
             <div className="flex items-center gap-2">
-              <span className="text-xl font-bold font-mono text-slate-100">
+              <span className="text-xl font-bold font-mono text-slate-800 dark:text-slate-100">
                 {resolvedScore !== null ? resolvedScore : 'N/A'}
-                {resolvedScore !== null && <span className="text-slate-500 text-sm">/100</span>}
+                {resolvedScore !== null && <span className="text-slate-400 dark:text-slate-500 text-sm">/100</span>}
               </span>
             </div>
 
@@ -347,10 +325,10 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
           <button
             type="button"
             onClick={onOpenReportModal}
-            className="mb-3 px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 hover:border-slate-600 text-xs font-sans font-medium text-slate-200 flex items-center gap-2 transition-colors"
+            className="mb-3 px-3 py-1.5 rounded bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-sans font-medium text-slate-700 dark:text-slate-200 flex items-center gap-2 transition-colors"
             title="Inspect AI Forensic Remediation Guidance"
           >
-            <Sparkles size={13} className="text-blue-400" />
+            <Sparkles size={13} className="text-blue-600 dark:text-blue-400" />
             <span>AI Forensic Audit</span>
             <ExternalLink size={11} className="text-slate-400" />
           </button>
@@ -364,7 +342,7 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
                 y1="64"
                 x2="140"
                 y2="30"
-                stroke="#334155"
+                className="stroke-slate-300 dark:stroke-slate-700"
                 strokeWidth="1.5"
                 strokeDasharray="3 3"
               />
@@ -373,7 +351,7 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
                 y1="64"
                 x2="140"
                 y2="98"
-                stroke="#334155"
+                className="stroke-slate-300 dark:stroke-slate-700"
                 strokeWidth="1.5"
                 strokeDasharray="3 3"
               />
@@ -384,14 +362,14 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
             {/* Central AI Node */}
             <div
               onClick={onOpenReportModal}
-              className="relative z-10 w-14 h-14 rounded-full bg-slate-800 border border-blue-500/60 flex items-center justify-center group hover:border-blue-400 transition-colors cursor-pointer shadow-sm"
+              className="relative z-10 w-14 h-14 rounded-full bg-white dark:bg-slate-800 border border-blue-500/60 flex items-center justify-center group hover:border-blue-400 transition-colors cursor-pointer"
               title="Click to view AI cryptographic risk findings"
             >
               <div className="flex flex-col items-center justify-center">
-                <span className="text-sm font-bold font-mono text-slate-100">
+                <span className="text-sm font-bold font-mono text-slate-800 dark:text-slate-100">
                   AI
                 </span>
-                <span className="text-[7px] font-mono text-blue-400 font-semibold tracking-wider">
+                <span className="text-[7px] font-mono text-blue-600 dark:text-blue-400 font-semibold tracking-wider">
                   ACTIVE
                 </span>
               </div>
@@ -399,21 +377,21 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
 
             {/* Lock Badges */}
             <div
-              className="absolute top-1 right-2 w-9 h-9 rounded-lg bg-slate-800/90 border border-slate-700 flex items-center justify-center text-slate-300 shadow-sm"
+              className="absolute top-1 right-2 w-9 h-9 rounded bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-300"
               title={mtaStsCheck ? `MTA-STS policy status: ${mtaStsCheck.status.toUpperCase()}` : 'No MTA-STS policy data in this scan'}
             >
-              <Lock size={14} className="text-slate-300" />
+              <Lock size={14} className="text-slate-500 dark:text-slate-300" />
             </div>
 
             <div
-              className="absolute bottom-1 right-2 w-9 h-9 rounded-lg bg-slate-800/90 border border-slate-700 flex items-center justify-center text-emerald-400 shadow-sm"
+              className="absolute bottom-1 right-2 w-9 h-9 rounded bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-emerald-600 dark:text-emerald-400"
               title={pqcEvaluated ? 'PQC indicators evaluated by the backend scan' : 'PQC indicators not evaluated by the backend scan'}
             >
-              <ShieldCheck size={14} className="text-emerald-400" />
+              <ShieldCheck size={14} className="text-emerald-600 dark:text-emerald-400" />
             </div>
           </div>
 
-          <div className="mt-2 text-[10px] font-mono text-slate-400 text-center">
+          <div className="mt-2 text-[10px] font-mono text-slate-500 dark:text-slate-400 text-center">
             {scanData ? 'Policy view built from latest scan response' : 'Awaiting scan response'}
           </div>
         </div>
@@ -422,15 +400,15 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
 
       {/* LOWER SECTION: Hierarchical Fuzzy Risk Explainability Breakdown (Task 3.1) */}
       {antecedentScores && (
-        <div className="mt-5 pt-4 border-t border-slate-800/80 space-y-3 font-mono">
+        <div className="mt-5 pt-4 border-t border-slate-200 dark:border-slate-800 space-y-3 font-mono">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Layers size={14} className="text-cyan-400" />
-              <span className="text-xs font-semibold text-slate-200 uppercase tracking-wider">
+              <Layers size={14} className="text-cyan-600 dark:text-cyan-400" />
+              <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
                 Fuzzy Risk Decomposition (6 Antecedent Engines)
               </span>
               {defuzzificationConfidence && (
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20">
                   Certainty: {(defuzzificationConfidence * 100).toFixed(0)}%
                 </span>
               )}
@@ -440,7 +418,7 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
               <button
                 type="button"
                 onClick={() => setShowRules(!showRules)}
-                className="text-[11px] text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition-colors"
+                className="text-[11px] text-cyan-700 dark:text-cyan-400 hover:text-cyan-600 dark:hover:text-cyan-300 flex items-center gap-1 transition-colors"
               >
                 <span>{showRules ? 'Hide Fired Rules' : `Show Fired Rules (${activatedRules.length})`}</span>
                 {showRules ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
@@ -489,24 +467,24 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
               }
             ].map((item) => {
               const pct = Math.round(item.value * 100);
-              const barColor = pct >= 75 ? 'bg-emerald-400' : pct >= 50 ? 'bg-amber-400' : 'bg-rose-400';
-              const textColor = pct >= 75 ? 'text-emerald-400' : pct >= 50 ? 'text-amber-400' : 'text-rose-400';
+              const barColor = pct >= 75 ? 'bg-emerald-500' : pct >= 50 ? 'bg-amber-500' : 'bg-rose-500';
+              const textColor = pct >= 75 ? 'text-emerald-700 dark:text-emerald-400' : pct >= 50 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400';
               return (
                 <div
                   key={item.id}
-                  className="p-2.5 rounded-lg bg-slate-900/90 dark:bg-[#161f30] border border-slate-800/80 flex flex-col justify-between"
+                  className="p-2.5 rounded bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 flex flex-col justify-between"
                 >
-                  <div className="flex items-center justify-between text-[10px] text-slate-400">
+                  <div className="flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400">
                     <span className="truncate">{item.label}</span>
                     <span className={`font-bold ${textColor}`}>{pct}%</span>
                   </div>
-                  <div className="w-full bg-slate-800 rounded-full h-1.5 my-1.5 overflow-hidden">
+                  <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1.5 my-1.5 overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all duration-500 ${barColor}`}
                       style={{ width: `${Math.max(4, pct)}%` }}
                     />
                   </div>
-                  <span className="text-[9px] text-slate-500 truncate">{item.desc}</span>
+                  <span className="text-[9px] text-slate-400 dark:text-slate-500 truncate">{item.desc}</span>
                 </div>
               );
             })}
@@ -514,13 +492,13 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
 
           {/* Activated Rules Explainability Trace */}
           {showRules && activatedRules && activatedRules.length > 0 && (
-            <div className="p-3 rounded-lg bg-slate-950/80 border border-slate-800 text-[11px] space-y-1.5 text-slate-300 animate-fade-in">
-              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
+            <div className="p-3 rounded bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 text-[11px] space-y-1.5 text-slate-600 dark:text-slate-300 animate-fade-in">
+              <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 tracking-wider block">
                 Activated Mamdani Inference Rules (Explainability Audit):
               </span>
-              <ul className="space-y-1 pl-3 list-disc text-slate-300">
+              <ul className="space-y-1 pl-3 list-disc text-slate-600 dark:text-slate-300">
                 {activatedRules.map((rule, idx) => (
-                  <li key={idx} className="font-mono text-[10px] text-slate-300">
+                  <li key={idx} className="font-mono text-[10px] text-slate-600 dark:text-slate-300">
                     {rule}
                   </li>
                 ))}

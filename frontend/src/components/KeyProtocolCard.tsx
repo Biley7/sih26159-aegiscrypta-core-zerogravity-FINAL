@@ -213,7 +213,7 @@ export const KeyProtocolCard: React.FC<KeyProtocolCardProps> = ({
   const currentRows = rows[activeMode];
 
   return (
-    <div className={`${className} bg-slate-50 dark:bg-slate-900/80 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-800/80 rounded-xl p-5 shadow-lg shadow-black/10 dark:shadow-black/20 hover:border-cyan-500/50 transition-all duration-200 flex flex-col justify-between`}>
+    <div className={`${className} bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-md p-5 hover:border-cyan-500/50 transition-colors flex flex-col justify-between`}>
       {/* Top Bar: Mode Switcher */}
       <div className="flex items-center justify-between gap-2 mb-4">
         <span className="text-[11px] font-semibold tracking-widest text-slate-600 dark:text-slate-400 uppercase">
@@ -221,7 +221,7 @@ export const KeyProtocolCard: React.FC<KeyProtocolCardProps> = ({
         </span>
 
         {/* 3 Pill buttons: Adopt All, Encrypt, Decrypt */}
-        <div className="flex items-center p-0.5 rounded-lg bg-slate-100 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 text-xs font-mono">
+        <div className="flex items-center p-0.5 rounded bg-slate-100 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 text-xs font-mono">
           {(['adopt', 'encrypt', 'decrypt'] as KeyMode[]).map((mode) => (
             <button
               key={mode}
@@ -240,10 +240,10 @@ export const KeyProtocolCard: React.FC<KeyProtocolCardProps> = ({
       </div>
 
       {/* Hairline Divided Table */}
-      <div className="divide-y divide-slate-200 dark:divide-slate-800/60 font-mono text-[11px] py-1">
+      <div className="divide-y divide-slate-200 dark:divide-slate-800 font-mono text-[11px] py-1">
         {currentRows.map((row) => {
           const barColor = row.unknown
-            ? '#64748b'
+            ? '#94a3b8'
             : row.progress >= 80
               ? '#00f0ff'
               : row.progress >= 60
@@ -254,18 +254,15 @@ export const KeyProtocolCard: React.FC<KeyProtocolCardProps> = ({
           return (
             <div
               key={row.id}
-              className="py-2.5 flex items-center justify-between gap-3 hover:bg-slate-100 dark:hover:bg-slate-800/40 px-1.5 rounded transition-colors"
+              className="py-2.5 flex items-center justify-between gap-3 hover:bg-slate-50 dark:hover:bg-slate-800/40 px-1.5 rounded transition-colors"
             >
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span
                     className="w-1.5 h-1.5 rounded-full shrink-0"
-                    style={{
-                      backgroundColor: barColor,
-                      boxShadow: `0 0 6px ${barColor}66`
-                    }}
+                    style={{ backgroundColor: barColor }}
                   ></span>
-                  <span className="font-semibold text-slate-900 dark:text-slate-100 truncate text-[12px] font-sans">
+                  <span className="font-semibold text-slate-800 dark:text-slate-100 truncate text-[12px] font-sans">
                     {row.name}
                   </span>
                 </div>
@@ -275,19 +272,18 @@ export const KeyProtocolCard: React.FC<KeyProtocolCardProps> = ({
               </div>
 
               <div className="flex items-center gap-3 shrink-0">
-                <div className="w-16 sm:w-20 h-1.5 rounded-full bg-slate-200 dark:bg-slate-950 overflow-hidden">
+                <div className="w-16 sm:w-20 h-1.5 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-500"
                     style={{
                       width: `${row.unknown ? 0 : row.progress}%`,
-                      background: `linear-gradient(90deg, ${barColor}bb, ${barColor})`,
-                      boxShadow: `0 0 6px ${barColor}55`
+                      background: barColor
                     }}
                   />
                 </div>
                 <span
                   className={`text-[11px] font-semibold w-16 text-right tracking-wider ${
-                    row.unknown ? 'text-slate-400' : row.progress >= 80 ? 'text-cyan-400/90' : row.progress >= 30 ? 'text-amber-400' : 'text-rose-400'
+                    row.unknown ? 'text-slate-400 dark:text-slate-500' : row.progress >= 80 ? 'text-cyan-700 dark:text-cyan-400/90' : row.progress >= 30 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400'
                   }`}
                 >
                   {row.metric}
@@ -299,9 +295,9 @@ export const KeyProtocolCard: React.FC<KeyProtocolCardProps> = ({
       </div>
 
       {/* Footer */}
-      <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800/60 text-[10px] font-mono text-slate-600 dark:text-slate-400 flex items-center justify-between">
+      <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800 text-[10px] font-mono text-slate-500 dark:text-slate-400 flex items-center justify-between">
         <span className="tracking-wider uppercase">Cipher Sync: {cipherSuite ? cipherSuite.slice(0, 22) : 'Awaiting scan'}</span>
-        <span className="text-emerald-400 font-semibold tracking-widest uppercase">
+        <span className="text-emerald-700 dark:text-emerald-400 font-semibold tracking-widest uppercase">
           {activeScore !== null && activeScore !== undefined ? `Score: ${activeScore}/100` : 'No Score Reported'}
         </span>
       </div>

@@ -99,7 +99,7 @@ export const SecurityReportModal: React.FC<SecurityReportModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-sm animate-fade-in font-sans">
-      <div className="relative w-full max-w-3xl rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden text-slate-900 dark:text-slate-100">
+      <div className="relative w-full max-w-3xl rounded-md bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 flex flex-col max-h-[90vh] overflow-hidden text-slate-900 dark:text-slate-100">
         
         {/* Modal Header */}
         <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-950/70">
@@ -137,7 +137,7 @@ export const SecurityReportModal: React.FC<SecurityReportModalProps> = ({
         {/* Modal Scrollable Content */}
         <div className="p-6 space-y-5 overflow-y-auto custom-scrollbar text-slate-700 dark:text-slate-200">
           {/* Executive Overview Banner */}
-          <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="p-4 rounded-md bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <span className="text-xs font-mono text-slate-500 dark:text-slate-400 uppercase">Target Domain</span>
               <div className="text-xl font-bold font-mono text-slate-900 dark:text-white">{domain}</div>
@@ -169,7 +169,7 @@ export const SecurityReportModal: React.FC<SecurityReportModalProps> = ({
               Protocol Compliance Checklist
             </h3>
             {reportItems.length === 0 ? (
-              <div className="p-5 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-dashed border-slate-300 dark:border-slate-700 text-center">
+              <div className="p-5 rounded-md bg-slate-50 dark:bg-slate-800/40 border border-dashed border-slate-300 dark:border-slate-700 text-center">
                 <div className="text-xs font-semibold text-slate-700 dark:text-slate-200">No audit checks available</div>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 font-sans">
                   Run a scan to populate this checklist with the checks the backend actually executed.
@@ -180,7 +180,7 @@ export const SecurityReportModal: React.FC<SecurityReportModalProps> = ({
                 {reportItems.map((item) => (
                   <div
                     key={item.key}
-                    className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/80 flex items-start gap-2.5"
+                    className="p-3 rounded-md bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/80 flex items-start gap-2.5"
                   >
                     {item.status === 'pass' ? (
                       <CheckCircle2 size={15} className="text-emerald-500 dark:text-emerald-400 shrink-0 mt-0.5" />
@@ -214,7 +214,7 @@ export const SecurityReportModal: React.FC<SecurityReportModalProps> = ({
           </div>
 
           {/* AI Remediation Guidance */}
-          <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/40 text-xs">
+          <div className="p-4 rounded-md bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/40 text-xs">
             <div className="flex items-center gap-2 text-blue-600 dark:text-blue-300 font-bold mb-1">
               <Sparkles size={14} />
               <span>AI Remediation Synthesis</span>

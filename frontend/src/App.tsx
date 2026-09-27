@@ -540,11 +540,11 @@ export function App() {
           {/* SESSIONS TAB: Passive PCAP Forensics Stream Reassembly */}
           {activeTab === 'sessions' ? (
             <div className="space-y-5">
-              <section className="bg-slate-50 dark:bg-slate-900/80 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-800/80 rounded-xl p-5 shadow-lg shadow-black/10 dark:shadow-black/20 hover:border-cyan-500/50 transition-all duration-200">
+              <section className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-md p-5 hover:border-cyan-500/50 transition-colors">
                 <div className="flex items-center justify-between mb-5 pb-4 border-b border-slate-200 dark:border-slate-800/60">
                   <div>
                     <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                      <Shield size={18} className="text-[#00f0ff]" />
+                      <Shield size={18} className="text-cyan-600 dark:text-cyan-400" />
                       Passive PCAP Network Forensics &amp; Stream Reassembly
                     </h2>
                     <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
@@ -676,12 +676,12 @@ export function App() {
 
           {/* Selected Credential Node Detail Drawer */}
           {selectedNodeId && (
-            <div className="p-3.5 rounded-lg bg-slate-900 dark:bg-slate-900/90 border border-slate-800 dark:border-slate-800 flex items-center justify-between gap-4 font-mono text-xs shadow-lg animate-fade-in">
+            <div className="p-3.5 rounded-md bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 flex items-center justify-between gap-4 font-mono text-xs animate-fade-in">
               <div className="flex items-center gap-2.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                 <div>
-                  <span className="font-bold text-slate-200 dark:text-slate-200 text-slate-800">INSPECTING CREDENTIAL NODE: </span>
-                  <span className="text-slate-300 dark:text-slate-300 text-slate-700">
+                  <span className="font-bold text-slate-800 dark:text-slate-200">INSPECTING CREDENTIAL NODE: </span>
+                  <span className="text-slate-600 dark:text-slate-300">
                     {credentialNodeDetail}
                   </span>
                 </div>
@@ -690,14 +690,14 @@ export function App() {
                 <button
                   type="button"
                   onClick={() => setIsCertModalOpen(true)}
-                  className="px-2.5 py-1 rounded bg-slate-800 dark:bg-slate-800 bg-slate-100 border border-slate-700 dark:border-slate-700 border-slate-200 text-blue-400 hover:text-white"
+                  className="px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-blue-700 dark:text-blue-400 hover:text-blue-900 dark:hover:text-white transition-colors"
                 >
                   View Full Chain
                 </button>
                 <button
                   type="button"
                   onClick={() => setSelectedNodeId(null)}
-                  className="text-slate-400 hover:text-white dark:text-slate-400 text-slate-600 hover:text-slate-900 px-2 py-1 rounded bg-slate-800 dark:bg-slate-800 bg-slate-100"
+                  className="px-2 py-1 rounded text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-800 transition-colors"
                 >
                   Dismiss
                 </button>
@@ -706,7 +706,7 @@ export function App() {
           )}
 
           {/* Institutional Defense Footer */}
-          <div className="mt-2 -mx-4 sm:-mx-5 lg:-mx-6 overflow-hidden border-t border-slate-800 dark:border-slate-800 border-slate-200 bg-surface bg-slate-50 dark:bg-transparent">
+          <div className="mt-2 -mx-4 sm:-mx-5 lg:-mx-6 overflow-hidden border-t border-slate-200 dark:border-slate-800 bg-transparent">
             <Footer
               onExportJson={handleExportJson}
               apiBaseUrl={settings.apiBaseUrl}

@@ -35,11 +35,11 @@ export const ActivityTrendCard: React.FC<ActivityTrendCardProps> = ({
   const grade = hasScore ? (score >= 90 ? 'A' : score >= 75 ? 'B' : score >= 50 ? 'C' : 'F') : null;
   const gradeColor = hasScore
     ? score >= 80
-      ? 'text-emerald-400'
+      ? 'text-emerald-700 dark:text-emerald-400'
       : score >= 60
-        ? 'text-amber-400'
-        : 'text-rose-400'
-    : 'text-slate-500';
+        ? 'text-amber-600 dark:text-amber-400'
+        : 'text-rose-600 dark:text-rose-400'
+    : 'text-slate-400 dark:text-slate-500';
   const summary = hasScore
     ? score >= 80
       ? 'Latest scan landed in the healthy band. Score is response-derived.'
@@ -69,9 +69,9 @@ export const ActivityTrendCard: React.FC<ActivityTrendCardProps> = ({
   const emailScore = total > 0 ? Math.round((passCount / total) * 100) : null;
 
   const metrics = [
-    { label: 'TLS Protocol Enforcement', value: tlsScore, color: 'bg-blue-500' },
-    { label: 'X.509 Chain Health', value: certScore, color: certScore !== null && certScore >= 70 ? 'bg-emerald-500' : 'bg-rose-500' },
-    { label: 'Email Auth (SPF/DMARC)', value: emailScore, color: 'bg-indigo-500' }
+    { label: 'TLS Protocol Enforcement', value: tlsScore, color: '#0891b2' },
+    { label: 'X.509 Chain Health', value: certScore, color: certScore !== null && certScore >= 70 ? '#10b981' : '#f43f5e' },
+    { label: 'Email Auth (SPF/DMARC)', value: emailScore, color: '#6366f1' }
   ];
 
   const chainLabel = cert
@@ -83,19 +83,19 @@ export const ActivityTrendCard: React.FC<ActivityTrendCardProps> = ({
     : 'No Cert Data';
 
   return (
-    <div className={`${className} bg-[#0c1220]/80 backdrop-blur-md border border-slate-800/80 rounded-xl p-5 shadow-lg shadow-black/20 hover:border-cyan-500/30 transition-all duration-200 flex flex-col justify-between`}>
+    <div className={`${className} bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-md p-5 transition-colors hover:border-cyan-500/50 flex flex-col justify-between`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Activity size={14} className="text-cyan-400" />
-          <span className="text-[11px] font-semibold tracking-widest text-slate-400 uppercase">
+          <Activity size={14} className="text-cyan-600 dark:text-cyan-400" />
+          <span className="text-[11px] font-semibold tracking-widest text-slate-500 dark:text-slate-400 uppercase">
             Posture Composition · Assurance
           </span>
         </div>
         <button
           type="button"
           onClick={onExpand}
-          className="p-1 rounded hover:bg-slate-800/70 text-slate-400 hover:text-cyan-400 transition-colors"
+          className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
           title="Inspect Activity Stream"
         >
           <ChevronRight size={15} />
@@ -103,13 +103,13 @@ export const ActivityTrendCard: React.FC<ActivityTrendCardProps> = ({
       </div>
 
       {/* Snippet: Badge + Description text */}
-      <div className="flex items-center gap-3 my-2 p-3 rounded-lg bg-slate-950/50 border border-slate-800">
-        <div className="w-10 h-10 rounded-lg bg-slate-900/60 border border-slate-800 flex items-center justify-center shrink-0 shadow-inner">
+      <div className="flex items-center gap-3 my-2 p-3 rounded border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40">
+        <div className="w-10 h-10 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center shrink-0">
           <span className={`text-lg font-bold font-mono tracking-wider ${gradeColor}`}>
             {grade ?? '—'}
           </span>
         </div>
-        <p className="text-[11px] text-slate-300 leading-snug font-sans">
+        <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-snug font-sans">
           {summary}
         </p>
       </div>
@@ -117,23 +117,22 @@ export const ActivityTrendCard: React.FC<ActivityTrendCardProps> = ({
       {/* Comparative Progress Bars */}
       <div className="space-y-3 mt-1 font-mono text-[11px]">
         {metrics.map((m, idx) => {
-          const barColor = m.value === null ? '#64748b' : idx === 0 ? '#00f0ff' : idx === 1 ? '#10b981' : '#f59e0b';
+          const barColor = m.value === null ? '#94a3b8' : m.color;
           return (
             <div key={idx} className="flex items-center justify-between gap-3">
-              <span className="text-[10px] text-slate-400 font-sans truncate flex-1 tracking-wide">
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 font-sans truncate flex-1 tracking-wide">
                 {m.label}
               </span>
-              <div className="w-20 h-1.5 rounded-full bg-slate-900 overflow-hidden shrink-0">
+              <div className="w-20 h-1.5 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden shrink-0">
                 <div
                   className="h-full rounded-full transition-all duration-500"
                   style={{
                     width: `${m.value ?? 0}%`,
-                    background: `linear-gradient(90deg, ${barColor}99, ${barColor})`,
-                    boxShadow: m.value === null ? 'none' : `0 0 6px ${barColor}55`
+                    background: barColor
                   }}
                 />
               </div>
-              <span className={`text-[10px] font-semibold w-10 text-right shrink-0 tracking-wider ${m.value === null ? 'text-slate-500' : 'text-cyan-400/90'}`}>
+              <span className={`text-[10px] font-semibold w-10 text-right shrink-0 tracking-wider ${m.value === null ? 'text-slate-400 dark:text-slate-500' : 'text-cyan-700 dark:text-cyan-400/90'}`}>
                 {m.value === null ? 'N/A' : `${m.value}%`}
               </span>
             </div>
@@ -142,9 +141,9 @@ export const ActivityTrendCard: React.FC<ActivityTrendCardProps> = ({
       </div>
 
       {/* Footer */}
-      <div className="pt-3 mt-2 border-t border-slate-800/60 flex items-center justify-between text-[10px] font-mono text-slate-400">
+      <div className="pt-3 mt-2 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-[10px] font-mono text-slate-500 dark:text-slate-400">
         <span className="tracking-widest uppercase">Chain: {chainLabel}</span>
-        <span className={`font-semibold tracking-widest uppercase ${total > 0 ? 'text-emerald-400' : 'text-slate-500'}`}>
+        <span className={`font-semibold tracking-widest uppercase ${total > 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-500'}`}>
           {total > 0 ? `${passCount}/${total} Checks Pass` : 'No Check Data'}
         </span>
       </div>

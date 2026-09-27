@@ -40,13 +40,13 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   };
 
   return (
-    <header className="h-16 px-4 md:px-6 bg-[#080D1A]/90 backdrop-blur-md border-b border-[#1E293B]/70 flex items-center justify-between gap-4 shrink-0 z-20">
+    <header className="h-16 px-4 md:px-6 bg-white dark:bg-slate-950/90 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-4 shrink-0 z-20">
       {/* Left: Mobile Menu Toggle & Search Bar with Run Audit CTA */}
       <div className="flex items-center gap-3 flex-1 max-w-2xl">
         <button
           type="button"
           onClick={onToggleMobileMenu}
-          className="lg:hidden p-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/60 transition-colors"
+          className="lg:hidden p-2 rounded text-slate-500 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors"
           aria-label="Toggle Navigation"
         >
           <Menu size={20} />
@@ -55,13 +55,13 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
         {/* Cyber Search & Audit Trigger Form */}
         <form onSubmit={handleSubmit} className="flex items-center gap-2 w-full">
           <div
-            className={`flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-[#0F172A]/90 border transition-all duration-300 flex-1 shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)] ${
+            className={`flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-slate-50 dark:bg-slate-900/90 border transition-colors flex-1 ${
               isFocused
-                ? 'border-cyan-400 shadow-[0_0_15px_rgba(0,242,254,0.3)] ring-1 ring-cyan-400/40'
-                : 'border-slate-700/70 hover:border-slate-600'
+                ? 'border-cyan-500 ring-1 ring-cyan-500/40'
+                : 'border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-600'
             }`}
           >
-            <Search size={16} className={`transition-colors shrink-0 ${isFocused ? 'text-cyan-400' : 'text-slate-400'}`} />
+            <Search size={16} className={`transition-colors shrink-0 ${isFocused ? 'text-cyan-600 dark:text-cyan-400' : 'text-slate-400'}`} />
             <input
               type="text"
               value={searchQuery}
@@ -69,13 +69,13 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
               placeholder="Target domain (e.g. gmail.com, defense.gov.in)..."
-              className="bg-transparent text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none w-full font-sans"
+              className="bg-transparent text-xs sm:text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none w-full font-sans"
               disabled={isScanning}
             />
             {isScanning ? (
               <RotateCcw size={14} className="text-cyan-400 animate-spin shrink-0" />
             ) : (
-              <div className="hidden sm:flex items-center gap-1 text-[10px] font-mono text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded-full border border-slate-700/60 shrink-0">
+              <div className="hidden sm:flex items-center gap-1 text-[10px] font-mono text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700 shrink-0">
                 <Command size={10} />
                 <span>K</span>
               </div>
@@ -106,11 +106,10 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
 
       {/* Right Side: Backend Status Badge & Security Report Button */}
       <div className="flex items-center gap-3 shrink-0">
-        {/* Backend Online/Offline Status Indicator */}
-        <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/80 border border-slate-800 text-xs font-mono text-slate-300">
+        {/* Backend Online/Offline Status Indicator */}          <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 text-xs font-mono text-slate-600 dark:text-slate-300">
           <span className={`w-2 h-2 rounded-full ${backendOnline === true ? 'bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : backendOnline === false ? 'bg-rose-400' : 'bg-amber-400'}`}></span>
-          <span className="text-slate-400">ENGINE:</span>
-          <span className={`font-semibold ${backendOnline === true ? 'text-cyan-300' : backendOnline === false ? 'text-rose-300' : 'text-amber-300'}`}>
+          <span className="text-slate-500 dark:text-slate-400">ENGINE:</span>
+          <span className={`font-semibold ${backendOnline === true ? 'text-cyan-700 dark:text-cyan-300' : backendOnline === false ? 'text-rose-600 dark:text-rose-300' : 'text-amber-600 dark:text-amber-300'}`}>
             {backendOnline === true ? 'ONLINE' : backendOnline === false ? 'OFFLINE' : 'CHECKING'}
           </span>
         </div>
@@ -119,13 +118,13 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
         <button
           type="button"
           onClick={onOpenReportModal}
-          className="group relative inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold text-white transition-all duration-300 overflow-hidden bg-gradient-to-r from-[#00F2FE]/20 via-[#38BDF8]/20 to-[#10B981]/20 hover:from-[#00F2FE]/30 hover:via-[#38BDF8]/30 hover:to-[#10B981]/30 border border-cyan-400/50 hover:border-cyan-300 shadow-[0_0_15px_rgba(0,242,254,0.25)] hover:shadow-[0_0_25px_rgba(0,242,254,0.45)] active:scale-95"
+          className="group relative inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded text-xs sm:text-sm font-semibold text-slate-800 dark:text-white transition-colors overflow-hidden bg-cyan-500/10 dark:bg-gradient-to-r dark:from-[#00F2FE]/20 dark:via-[#38BDF8]/20 dark:to-[#10B981]/20 hover:bg-cyan-500/20 border border-cyan-500/50 hover:border-cyan-400 active:scale-95"
         >
           <span className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
           
-          <Download size={14} className="text-cyan-300 group-hover:scale-110 transition-transform" />
+          <Download size={14} className="text-cyan-700 dark:text-cyan-300" />
           <span className="relative font-sans tracking-tight">Security Report</span>
-          <ExternalLink size={12} className="text-cyan-400/80 group-hover:text-cyan-300 transition-colors" />
+          <ExternalLink size={12} className="text-cyan-600 dark:text-cyan-400/80" />
         </button>
       </div>
     </header>

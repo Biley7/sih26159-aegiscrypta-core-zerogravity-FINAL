@@ -5,13 +5,10 @@ import {
   Sun,
   Shield,
   Sliders,
-  Sparkles,
   Server,
   RefreshCw,
   CheckCircle2,
   AlertCircle,
-  Eye,
-  FileText,
   Check
 } from 'lucide-react';
 import { AppSettings } from '../types';
@@ -42,6 +39,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [apiKeySaved, setApiKeySaved] = useState(false);
   if (!isOpen) return null;
 
+  // Tailwind's dark: utilities are driven strictly by the `.dark` class
+  // (`darkMode: 'class'`). The data-theme attribute only feeds the CSS variable
+  // palette; Pure Black keeps data-theme="high-contrast" for its OLED overrides.
   const handleThemeChange = (newTheme: 'dark' | 'light' | 'high-contrast') => {
     onUpdateSettings({ theme: newTheme });
     document.documentElement.setAttribute('data-theme', newTheme);
@@ -68,7 +68,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/75 backdrop-blur-sm animate-fade-in font-sans">
-      <div className="relative w-full max-w-xl rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden text-slate-900 dark:text-slate-100">
+      <div className="relative w-full max-w-xl rounded-md bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 flex flex-col max-h-[90vh] overflow-hidden text-slate-900 dark:text-slate-100">
         
         {/* Header */}
         <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-950/70">
@@ -113,7 +113,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <button
                 type="button"
                 onClick={() => handleThemeChange('dark')}
-                className={`p-3 rounded-lg border text-left transition-colors font-mono ${
+                className={`p-3 rounded-md border text-left transition-colors font-mono ${
                   settings.theme === 'dark'
                     ? 'border-blue-500 bg-blue-500/10 text-slate-900 dark:text-white font-semibold'
                     : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700'
@@ -133,7 +133,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <button
                 type="button"
                 onClick={() => handleThemeChange('light')}
-                className={`p-3 rounded-lg border text-left transition-colors font-mono ${
+                className={`p-3 rounded-md border text-left transition-colors font-mono ${
                   settings.theme === 'light'
                     ? 'border-blue-500 bg-blue-500/10 text-slate-900 dark:text-white font-semibold'
                     : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700'
@@ -153,7 +153,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <button
                 type="button"
                 onClick={() => handleThemeChange('high-contrast')}
-                className={`p-3 rounded-lg border text-left transition-colors font-mono ${
+                className={`p-3 rounded-md border text-left transition-colors font-mono ${
                   settings.theme === 'high-contrast'
                     ? 'border-blue-500 bg-blue-500/10 text-slate-900 dark:text-white font-semibold'
                     : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700'

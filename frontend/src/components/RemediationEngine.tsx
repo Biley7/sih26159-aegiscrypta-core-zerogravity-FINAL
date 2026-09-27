@@ -163,7 +163,7 @@ export const RemediationEngine: React.FC<RemediationEngineProps> = ({
         : isSpf
         ? `; Authoritative Hardened SPF Record (RFC 7208)\n${domain}.  3600  IN  TXT  "v=spf1 mx -all"`
         : isDane
-        ? `; DANE TLSA Record for MX Port 25 (RFC 6698 / RFC 7672)\n; IMPORTANT: Replace <INSERT_CERT_SHA256_FINGERPRINT> with your actual certificate SHA-256 hash before publishing.\n_25._tcp.mail.${domain}.  3600  IN  TLSA  3 1 1 <INSERT_CERT_SHA256_FINGERPRINT>`
+        ? `; DANE TLSA Record for MX Port 25 (RFC 6698 / RFC 7672)\n; IMPORTANT: Replace [TLSA_FINGERPRINT_PLACEHOLDER] with your actual certificate SHA-256 hash before publishing.\n_25._tcp.mail.${domain}.  3600  IN  TLSA  3 1 1 [TLSA_FINGERPRINT_PLACEHOLDER]`
         : isCert
         ? `; ACME DNS-01 Challenge Record for TLS Certificate Renewal\n_acme-challenge.mail.${domain}.  300  IN  TXT  "verification_token_here"`
         : `; MTA-STS Discovery Policy Record (RFC 8461)\n_mta-sts.${domain}.  3600  IN  TXT  "v=STSv1; id=20260901T000000Z;"`),
@@ -252,13 +252,13 @@ echo "[AegisCrypta] Hardening completed successfully."`
 
       {/* Aggregate CVSS Metrics Banner */}
       {cvssMetrics && (
-        <div className="mb-4 p-4 rounded-xl bg-[#0c1220]/80 backdrop-blur-md border border-slate-800/80 shadow-lg shadow-black/20 hover:border-cyan-500/30 transition-all duration-200 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
+        <div className="mb-4 p-4 rounded-md bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 hover:border-cyan-500/50 transition-colors flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-lg bg-slate-900/60 border border-slate-800 flex items-center justify-center shadow-inner">
-              <Target size={19} className="text-rose-400" />
+            <div className="w-11 h-11 rounded bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 flex items-center justify-center">
+              <Target size={19} className="text-rose-600 dark:text-rose-400" />
             </div>
             <div>
-              <div className="text-[11px] font-semibold tracking-widest text-slate-400 uppercase">
+              <div className="text-[11px] font-semibold tracking-widest text-slate-500 dark:text-slate-400 uppercase">
                 CVSS v3.1 Risk Metrics · Aggregate Scan Posture
               </div>
               <div className="flex items-center gap-3 mt-1">
@@ -267,12 +267,12 @@ echo "[AegisCrypta] Hardening completed successfully."`
                   Base Score · {(cvssMetrics.base_score ?? 0).toFixed(1)}
                 </span>
                 {cvssMetrics.severity && (
-                  <span className="font-mono text-xs text-cyan-400/90 font-semibold uppercase tracking-wider">
+                  <span className="font-mono text-xs text-cyan-700 dark:text-cyan-400/90 font-semibold uppercase tracking-wider">
                     Severity: {cvssMetrics.severity}
                   </span>
                 )}
                 {cvssMetrics.vector_string && (
-                  <code className="hidden md:inline font-mono text-[10px] text-slate-400 ml-2 truncate max-w-xs" title={cvssMetrics.vector_string}>
+                  <code className="hidden md:inline font-mono text-[10px] text-slate-500 dark:text-slate-400 ml-2 truncate max-w-xs" title={cvssMetrics.vector_string}>
                     {cvssMetrics.vector_string}
                   </code>
                 )}
@@ -283,14 +283,14 @@ echo "[AegisCrypta] Hardening completed successfully."`
             <div className="flex items-center gap-6 font-mono text-[11px]">
               {cvssMetrics.exploitability_score !== undefined && (
                 <div className="text-right">
-                  <div className="text-slate-400 uppercase tracking-widest text-[10px]">Exploitability</div>
-                  <div className="text-amber-400 font-bold text-sm">{cvssMetrics.exploitability_score.toFixed(1)}</div>
+                  <div className="text-slate-500 dark:text-slate-400 uppercase tracking-widest text-[10px]">Exploitability</div>
+                  <div className="text-amber-600 dark:text-amber-400 font-bold text-sm">{cvssMetrics.exploitability_score.toFixed(1)}</div>
                 </div>
               )}
               {cvssMetrics.impact_score !== undefined && (
                 <div className="text-right">
-                  <div className="text-slate-400 uppercase tracking-widest text-[10px]">Impact</div>
-                  <div className="text-rose-400 font-bold text-sm">{cvssMetrics.impact_score.toFixed(1)}</div>
+                  <div className="text-slate-500 dark:text-slate-400 uppercase tracking-widest text-[10px]">Impact</div>
+                  <div className="text-rose-600 dark:text-rose-400 font-bold text-sm">{cvssMetrics.impact_score.toFixed(1)}</div>
                 </div>
               )}
             </div>
@@ -299,9 +299,9 @@ echo "[AegisCrypta] Hardening completed successfully."`
       )}
 
       {/* Sortable Findings Table */}
-      <div className="mb-5 rounded-xl overflow-hidden bg-[#0c1220]/80 backdrop-blur-md border border-slate-800/80 shadow-lg shadow-black/20 hover:border-cyan-500/30 transition-all duration-200">
+      <div className="mb-5 rounded-md overflow-hidden bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 hover:border-cyan-500/50 transition-colors">
         <table className="w-full text-left font-mono">
-          <thead className="bg-slate-950/70 text-slate-400 uppercase text-[10px] tracking-widest border-b border-slate-800/90">
+          <thead className="bg-slate-100 dark:bg-slate-950/70 text-slate-500 dark:text-slate-400 uppercase text-[10px] tracking-widest border-b border-slate-200 dark:border-slate-800">
             <tr>
               <th className="px-5 py-3.5 w-[42%]">
                 <button
@@ -320,7 +320,7 @@ echo "[AegisCrypta] Hardening completed successfully."`
                   onClick={() => toggleSort('category')}
                   className="flex items-center gap-1.5 hover:text-cyan-400 transition-colors font-semibold"
                 >
-                  <Code2 size={13} className="text-[#00f0ff]" />
+                  <Code2 size={13} className="text-cyan-600 dark:text-cyan-400" />
                   Category
                   <SortIndicator forKey="category" />
                 </button>
@@ -349,12 +349,12 @@ echo "[AegisCrypta] Hardening completed successfully."`
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800/60 text-[11px]">
+          <tbody className="divide-y divide-slate-200 dark:divide-slate-800/60 text-[11px]">
             {sortedFindings.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-5 py-8 text-center text-slate-400">
-                  <Check size={16} className="mx-auto mb-2 text-emerald-400" />
-                  <span className="font-semibold text-slate-300">No findings match the current severity filter.</span>
+                <td colSpan={4} className="px-5 py-8 text-center text-slate-500 dark:text-slate-400">
+                  <Check size={16} className="mx-auto mb-2 text-emerald-600 dark:text-emerald-400" />
+                  <span className="font-semibold text-slate-700 dark:text-slate-300">No findings match the current severity filter.</span>
                 </td>
               </tr>
             ) : (
@@ -363,20 +363,20 @@ echo "[AegisCrypta] Hardening completed successfully."`
                 return (
                   <tr
                     key={`${finding.title}-${idx}`}
-                    className="hover:bg-slate-800/40 transition-colors"
+                    className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
                   >
                     <td className="px-5 py-3.5 align-top">
-                      <div className="font-semibold text-slate-100 text-[12px] font-sans leading-snug">
+                      <div className="font-semibold text-slate-800 dark:text-slate-100 text-[12px] font-sans leading-snug">
                         {finding.title}
                       </div>
                       {finding.description && (
-                        <div className="mt-1.5 text-[11px] text-slate-400 leading-tight line-clamp-2">
+                        <div className="mt-1.5 text-[11px] text-slate-500 dark:text-slate-400 leading-tight line-clamp-2">
                           {finding.description}
                         </div>
                       )}
                     </td>
                     <td className="px-5 py-3.5 align-top">
-                      <span className="px-2 py-1 rounded bg-slate-900/60 border border-slate-800 text-cyan-400/90 uppercase tracking-wider text-[10px] font-semibold">
+                      <span className="px-2 py-1 rounded bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-cyan-700 dark:text-cyan-400/90 uppercase tracking-wider text-[10px] font-semibold">
                         {finding.category || 'Uncategorized'}
                       </span>
                     </td>
@@ -402,7 +402,7 @@ echo "[AegisCrypta] Hardening completed successfully."`
           </tbody>
         </table>
         {sortedFindings.length > 0 && (
-          <div className="px-5 py-2.5 border-t border-slate-800/90 bg-slate-950/80 text-[10px] text-slate-400 font-mono flex items-center justify-between">
+          <div className="px-5 py-2.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/80 text-[10px] text-slate-500 dark:text-slate-400 font-mono flex items-center justify-between">
             <span className="tracking-wider uppercase">Showing {sortedFindings.length} Finding{sortedFindings.length === 1 ? '' : 's'}</span>
             <span className="tracking-wider uppercase">Sorted by {sortKey.toUpperCase()} · {sortDir.toUpperCase()}</span>
           </div>

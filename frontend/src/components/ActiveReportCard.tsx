@@ -39,26 +39,23 @@ export const ActiveReportCard: React.FC<ActiveReportCardProps> = ({
   ];
 
   return (
-    <div className={`${className} bg-slate-50 dark:bg-slate-900/80 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-800/80 rounded-xl p-5 shadow-lg shadow-black/10 dark:shadow-black/20 hover:border-cyan-500/50 transition-all duration-200 flex flex-col justify-between`}>
+    <div className={`${className} bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-md p-5 transition-colors hover:border-cyan-500/50 flex flex-col justify-between`}>
       {/* Top Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-semibold tracking-widest text-slate-600 dark:text-slate-400 uppercase">
+          <span className="text-[11px] font-semibold tracking-widest text-slate-500 dark:text-slate-400 uppercase">
             Active Security Report
           </span>
-          <span
-            className="w-1.5 h-1.5 rounded-full bg-[#00f0ff] animate-pulse"
-            style={{ boxShadow: '0 0 6px #00f0ff' }}
-          ></span>
+          <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 dark:bg-cyan-400 animate-pulse"></span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-mono text-slate-500">
+          <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400">
             {activeScore !== null && activeScore !== undefined ? `${activeScore}/100` : 'N/A'}
           </span>
           <button
             type="button"
             onClick={onExpand}
-            className="p-1 rounded hover:bg-slate-800/70 text-slate-400 hover:text-cyan-400 transition-colors"
+            className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
             title="Open Report Details"
           >
             <ChevronRight size={15} />
@@ -71,15 +68,15 @@ export const ActiveReportCard: React.FC<ActiveReportCardProps> = ({
       <div className="relative w-full h-28 my-auto py-1">
         <svg
           viewBox="0 0 240 90"
-          className="w-full h-full overflow-visible"
+          className="w-full h-full"
           preserveAspectRatio="none"
           role="img"
           aria-label="Insufficient historical data for a posture trend"
         >
           {/* Grid lines */}
-          <line x1="10" y1="25" x2="230" y2="25" stroke="#1e293b" strokeDasharray="3 3" />
-          <line x1="10" y1="55" x2="230" y2="55" stroke="#1e293b" strokeDasharray="3 3" />
-          <line x1="10" y1="78" x2="230" y2="78" stroke="#1e293b" strokeDasharray="3 3" />
+          <line x1="10" y1="25" x2="230" y2="25" className="stroke-slate-200 dark:stroke-slate-800" strokeDasharray="3 3" />
+          <line x1="10" y1="55" x2="230" y2="55" className="stroke-slate-200 dark:stroke-slate-800" strokeDasharray="3 3" />
+          <line x1="10" y1="78" x2="230" y2="78" className="stroke-slate-200 dark:stroke-slate-800" strokeDasharray="3 3" />
 
           {/* Flatline indicating absence of time-series observations */}
           <line
@@ -87,33 +84,33 @@ export const ActiveReportCard: React.FC<ActiveReportCardProps> = ({
             y1="55"
             x2="228"
             y2="55"
-            stroke="#475569"
+            className="stroke-slate-300 dark:stroke-slate-600"
             strokeWidth="1.5"
             strokeDasharray="5 4"
           />
 
-          <text x="120" y="42" textAnchor="middle" fill="#64748b" fontSize="9" fontFamily="monospace" letterSpacing="1">
+          <text x="120" y="42" textAnchor="middle" className="fill-slate-500" fontSize="9" fontFamily="monospace" letterSpacing="1">
             INSUFFICIENT DATA
           </text>
-          <text x="120" y="68" textAnchor="middle" fill="#475569" fontSize="6.5" fontFamily="monospace">
+          <text x="120" y="68" textAnchor="middle" className="fill-slate-400 dark:fill-slate-500" fontSize="6.5" fontFamily="monospace">
             NO HISTORICAL TIME SERIES IN SCAN RESPONSE
           </text>
         </svg>
       </div>
 
       {/* Stats Bar */}
-      <div className="pt-3 border-t border-slate-200 dark:border-slate-800/60 grid grid-cols-4 gap-1.5 text-center font-mono">
+      <div className="pt-3 border-t border-slate-200 dark:border-slate-800 grid grid-cols-4 gap-1.5 text-center font-mono">
         {stats.map((st, i) => (
           <div key={i} className="flex flex-col gap-0.5">
             <span className={`text-xs font-bold tracking-wider ${
-              st.value === 'N/A' ? 'text-slate-500' :
-              st.label === 'Critical' ? 'text-rose-400' :
-              st.label === 'Warn' ? 'text-amber-400' :
-              st.label === 'PFS' ? 'text-[#00f0ff]' : 'text-emerald-400'
+              st.value === 'N/A' ? 'text-slate-400 dark:text-slate-500' :
+              st.label === 'Critical' ? 'text-rose-600 dark:text-rose-400' :
+              st.label === 'Warn' ? 'text-amber-600 dark:text-amber-400' :
+              st.label === 'PFS' ? 'text-cyan-700 dark:text-cyan-400' : 'text-emerald-700 dark:text-emerald-400'
             }`}>
               {st.value}
             </span>
-            <span className="text-[9px] text-slate-600 dark:text-slate-400 tracking-widest uppercase">
+            <span className="text-[9px] text-slate-500 dark:text-slate-400 tracking-widest uppercase">
               {st.label}
             </span>
           </div>

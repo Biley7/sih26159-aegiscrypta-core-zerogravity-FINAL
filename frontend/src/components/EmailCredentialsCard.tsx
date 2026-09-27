@@ -29,7 +29,7 @@ const STATE_COLORS: Record<AuthState, string> = {
   pass: '#10b981',
   warn: '#f59e0b',
   fail: '#f43f5e',
-  unknown: '#64748b'
+  unknown: '#94a3b8'
 };
 
 export const EmailCredentialsCard: React.FC<EmailCredentialsCardProps> = ({
@@ -64,7 +64,6 @@ export const EmailCredentialsCard: React.FC<EmailCredentialsCardProps> = ({
   const totalPassed = authItems.filter((i) => i.state === 'pass').length;
   const unknownCount = authItems.filter((i) => i.state === 'unknown').length;
 
-  // Dynamically compute SVG coordinates across the 270x90 canvas.
   // The line encodes per-check status only (no fabricated time-series baseline).
   const xPositions = [15, 52, 90, 128, 165, 202, 240];
   const yForState = (state: AuthState, idx: number): number => {
@@ -88,19 +87,19 @@ export const EmailCredentialsCard: React.FC<EmailCredentialsCardProps> = ({
   const line1Path = `M ${line1Points.map((p) => `${p.x} ${p.y}`).join(' L ')}`;
 
   return (
-    <div className={`${className} bg-[#0c1220]/80 backdrop-blur-md border border-slate-800/80 rounded-xl p-5 shadow-lg shadow-black/20 hover:border-cyan-500/30 transition-all duration-200 flex flex-col justify-between`}>
+    <div className={`${className} bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-md p-5 transition-colors hover:border-cyan-500/50 flex flex-col justify-between`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <MailCheck size={15} className="text-[#00f0ff]" />
-          <span className="text-[11px] font-semibold tracking-widest text-slate-400 uppercase">
+          <MailCheck size={15} className="text-cyan-600 dark:text-cyan-400" />
+          <span className="text-[11px] font-semibold tracking-widest text-slate-500 dark:text-slate-400 uppercase">
             Email Auth · TLS Credentials
           </span>
         </div>
         <button
           type="button"
           onClick={onExpand}
-          className="p-1 rounded hover:bg-slate-800/70 text-slate-400 hover:text-cyan-400 transition-colors"
+          className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
           title="Inspect Handshakes"
         >
           <ArrowUpRight size={14} />
@@ -108,25 +107,24 @@ export const EmailCredentialsCard: React.FC<EmailCredentialsCardProps> = ({
       </div>
 
       {/* Per-check status line */}
-      <div className="relative w-full h-26 my-auto">
+      <div className="relative w-full h-28 my-auto">
         <svg
           viewBox="0 0 270 90"
-          className="w-full h-full overflow-visible"
+          className="w-full h-full"
           preserveAspectRatio="none"
         >
           {/* Grid lines */}
-          <line x1="5" y1="20" x2="265" y2="20" stroke="#1e293b" strokeDasharray="3 3" />
-          <line x1="5" y1="50" x2="265" y2="50" stroke="#1e293b" strokeDasharray="3 3" />
-          <line x1="5" y1="80" x2="265" y2="80" stroke="#1e293b" strokeDasharray="3 3" />
+          <line x1="5" y1="20" x2="265" y2="20" className="stroke-slate-200 dark:stroke-slate-800" strokeDasharray="3 3" />
+          <line x1="5" y1="50" x2="265" y2="50" className="stroke-slate-200 dark:stroke-slate-800" strokeDasharray="3 3" />
+          <line x1="5" y1="80" x2="265" y2="80" className="stroke-slate-200 dark:stroke-slate-800" strokeDasharray="3 3" />
 
           {/* Latest scan results, one point per check */}
           <path
             d={line1Path}
             fill="none"
-            stroke="#00f0ff"
+            className="stroke-cyan-600 dark:stroke-[#00f0ff]"
             strokeWidth="2.2"
             strokeLinecap="round"
-            style={{ filter: 'drop-shadow(0 0 4px rgba(0, 240, 255, 0.45))' }}
           />
 
           {line1Points.map((pt, i) => {
@@ -137,7 +135,7 @@ export const EmailCredentialsCard: React.FC<EmailCredentialsCardProps> = ({
                 cx={pt.x}
                 cy={pt.y}
                 r="3"
-                fill="#090d16"
+                className="fill-white dark:fill-slate-900"
                 stroke={STATE_COLORS[state]}
                 strokeWidth="2"
                 strokeDasharray={state === 'unknown' ? '2 2' : undefined}
@@ -152,7 +150,7 @@ export const EmailCredentialsCard: React.FC<EmailCredentialsCardProps> = ({
               x={pt.x}
               y="88"
               textAnchor="middle"
-              fill="#475569"
+              className="fill-slate-400 dark:fill-slate-500"
               fontSize="6.5"
               fontFamily="monospace"
             >
@@ -163,24 +161,18 @@ export const EmailCredentialsCard: React.FC<EmailCredentialsCardProps> = ({
       </div>
 
       {/* Axis & Legend */}
-      <div className="pt-3 border-t border-slate-800/60 flex items-center justify-between text-[10px] font-mono text-slate-400">
+      <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-[10px] font-mono text-slate-500 dark:text-slate-400">
         <div className="flex items-center gap-4">
           <span className="flex items-center gap-1.5">
-            <span
-              className="w-3 h-0.5 inline-block"
-              style={{ backgroundColor: '#00f0ff', boxShadow: '0 0 4px #00f0ff' }}
-            ></span>
+            <span className="w-3 h-0.5 inline-block bg-cyan-600 dark:bg-cyan-400"></span>
             <span className="tracking-widest uppercase">Latest scan checks</span>
           </span>
           <span className="flex items-center gap-1.5">
-            <span
-              className="w-2 h-2 rounded-full inline-block border-2"
-              style={{ borderColor: '#64748b' }}
-            ></span>
+            <span className="w-2 h-2 rounded-full inline-block border-2 border-slate-400 dark:border-slate-500"></span>
             <span className="tracking-widest uppercase">Unknown</span>
           </span>
         </div>
-        <span className={`font-semibold tracking-widest uppercase ${unknownCount > 0 ? 'text-amber-400' : 'text-emerald-400'}`}>
+        <span className={`font-semibold tracking-widest uppercase ${unknownCount > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
           {totalPassed}/{totalEvaluated} Passed{unknownCount > 0 ? ` · ${unknownCount} N/A` : ''}
         </span>
       </div>

@@ -106,32 +106,32 @@ export const DockedTerminal: React.FC<DockedTerminalProps> = ({
   const getTagBadge = (tag: TerminalLog['tag']) => {
     switch (tag) {
       case 'INFO':
-        return <span className="text-slate-300 font-semibold">[INFO]</span>;
+        return <span className="text-slate-700 dark:text-slate-300 font-semibold">[INFO]</span>;
       case 'AUTH':
-        return <span className="text-emerald-400 font-semibold">[AUTH]</span>;
+        return <span className="text-emerald-700 dark:text-emerald-400 font-semibold">[AUTH]</span>;
       case 'ALERT':
-        return <span className="text-amber-400 font-semibold">[ALERT]</span>;
+        return <span className="text-amber-700 dark:text-amber-400 font-semibold">[ALERT]</span>;
       case 'PQC':
-        return <span className="text-indigo-400 font-semibold">[PQC]</span>;
+        return <span className="text-indigo-700 dark:text-indigo-400 font-semibold">[PQC]</span>;
       case 'TLS':
-        return <span className="text-blue-400 font-semibold">[TLS]</span>;
+        return <span className="text-blue-700 dark:text-blue-400 font-semibold">[TLS]</span>;
       case 'DNS':
-        return <span className="text-teal-400 font-semibold">[DNS]</span>;
+        return <span className="text-teal-700 dark:text-teal-400 font-semibold">[DNS]</span>;
       case 'SUCCESS':
-        return <span className="text-emerald-400 font-semibold">[SUCCESS]</span>;
+        return <span className="text-emerald-700 dark:text-emerald-400 font-semibold">[SUCCESS]</span>;
       case 'ERROR':
-        return <span className="text-rose-400 font-semibold">[ERROR]</span>;
+        return <span className="text-rose-700 dark:text-rose-400 font-semibold">[ERROR]</span>;
       case 'SYSTEM':
-        return <span className="text-slate-400 font-semibold">[SYSTEM]</span>;
+        return <span className="text-slate-500 dark:text-slate-400 font-semibold">[SYSTEM]</span>;
       default:
-        return <span className="text-slate-400">[{tag}]</span>;
+        return <span className="text-slate-500 dark:text-slate-400">[{tag}]</span>;
     }
   };
 
   return (
     <div
       style={{ height }}
-      className="terminal-drawer shrink-0 border-t border-slate-800 bg-[#070B12] flex flex-col font-mono select-none relative z-20"
+      className="terminal-drawer shrink-0 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 flex flex-col font-mono select-none relative z-20"
     >
       {/* Draggable Resize Handle */}
       <div
@@ -143,15 +143,15 @@ export const DockedTerminal: React.FC<DockedTerminalProps> = ({
       </div>
 
       {/* Terminal Header Bar */}
-      <div className="h-9 px-4 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between gap-3 shrink-0">
+      <div className="h-9 px-4 bg-slate-50 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3 shrink-0">
         
         {/* Left: Terminal status indicator */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <span className="flex items-center gap-1.5">
               <span className={`w-2 h-2 rounded-full ${backendOnline ? 'bg-emerald-500' : 'bg-rose-500 animate-pulse'}`}></span>
-              <TerminalIcon size={13} className="text-slate-300" />
-              <span className="text-xs font-bold text-slate-100 tracking-wider">
+              <TerminalIcon size={13} className="text-slate-500 dark:text-slate-300" />
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-100 tracking-wider">
                 AUDIT TERMINAL
               </span>
             </span>
@@ -166,12 +166,12 @@ export const DockedTerminal: React.FC<DockedTerminalProps> = ({
             </span>
           </div>
 
-          <div className="hidden lg:flex items-center gap-2 pl-3 border-l border-slate-800 text-[11px] text-slate-400">
+          <div className="hidden lg:flex items-center gap-2 pl-3 border-l border-slate-200 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400">
             <span>TARGET</span>
-            <span className="text-slate-300 font-mono">{domain}</span>
-            <span className="text-slate-600">//</span>
+            <span className="text-slate-700 dark:text-slate-300 font-mono">{domain}</span>
+            <span className="text-slate-300 dark:text-slate-600">//</span>
             <span>SCORE</span>
-            <span className="text-slate-300 font-mono">{score !== null ? `${score}/100` : 'N/A'}</span>
+            <span className="text-slate-700 dark:text-slate-300 font-mono">{score !== null ? `${score}/100` : 'N/A'}</span>
           </div>
         </div>
 
@@ -181,7 +181,7 @@ export const DockedTerminal: React.FC<DockedTerminalProps> = ({
           <button
             type="button"
             onClick={onClearLogs}
-            className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+            className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
             title="Clear terminal buffer"
           >
             <Trash2 size={13} />
@@ -191,7 +191,7 @@ export const DockedTerminal: React.FC<DockedTerminalProps> = ({
           <button
             type="button"
             onClick={handleCopyLogs}
-            className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition-colors flex items-center gap-1"
+            className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors flex items-center gap-1"
             title="Copy logs to clipboard"
           >
             {copied ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
@@ -202,7 +202,7 @@ export const DockedTerminal: React.FC<DockedTerminalProps> = ({
           <button
             type="button"
             onClick={() => onToggleHeight(isMaximized ? 220 : 540)}
-            className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition-colors hidden sm:block"
+            className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors hidden sm:block"
             title={isMaximized ? 'Restore standard height' : 'Maximize terminal'}
           >
             {isMaximized ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
@@ -212,7 +212,7 @@ export const DockedTerminal: React.FC<DockedTerminalProps> = ({
           <button
             type="button"
             onClick={() => onToggleHeight(isCollapsed ? 220 : 48)}
-            className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+            className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
             title={isCollapsed ? 'Expand terminal drawer' : 'Collapse terminal drawer'}
           >
             {isCollapsed ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
@@ -224,28 +224,28 @@ export const DockedTerminal: React.FC<DockedTerminalProps> = ({
       {!isCollapsed && (
         <>
           {/* Scrollable log stream */}
-          <div className="flex-1 overflow-y-auto p-3 space-y-1 text-xs text-slate-300 custom-scrollbar select-text bg-[#070B12]">
+          <div className="flex-1 overflow-y-auto p-3 space-y-1 text-xs text-slate-700 dark:text-slate-300 custom-scrollbar select-text bg-white dark:bg-slate-950">
             {logs.length === 0 ? (
-              <div className="py-4 text-center text-slate-600 text-xs italic">
+              <div className="py-4 text-center text-slate-400 dark:text-slate-600 text-xs italic">
                 Terminal output buffer is empty. Type 'help' below or enter a target domain above.
               </div>
             ) : (
               logs.map((log) => (
                 <div
                   key={log.id}
-                  className="flex items-start gap-2 hover:bg-slate-900/60 px-1 py-0.5 rounded leading-relaxed"
+                  className="flex items-start gap-2 hover:bg-slate-100 dark:hover:bg-slate-900/60 px-1 py-0.5 rounded leading-relaxed"
                 >
-                  <span className="text-[11px] text-slate-500 shrink-0 select-none">
+                  <span className="text-[11px] text-slate-400 dark:text-slate-500 shrink-0 select-none">
                     {log.timestamp}
                   </span>
                   <span className="shrink-0 select-none">
                     {getTagBadge(log.tag)}
                   </span>
-                  <span className="flex-1 break-all text-slate-200">
+                  <span className="flex-1 break-all text-slate-800 dark:text-slate-200">
                     {log.message}
                   </span>
                   {log.hash && (
-                    <span className="text-[10px] text-slate-400 bg-slate-900 px-1 rounded border border-slate-800 shrink-0 select-all">
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-900 px-1 rounded border border-slate-200 dark:border-slate-800 shrink-0 select-all">
                       {log.hash}
                     </span>
                   )}
@@ -258,11 +258,11 @@ export const DockedTerminal: React.FC<DockedTerminalProps> = ({
           {/* Interactive CLI Input Line */}
           <form
             onSubmit={handleFormSubmit}
-            className="h-9 px-4 bg-slate-900/90 border-t border-slate-800 flex items-center gap-2 shrink-0"
+            className="h-9 px-4 bg-slate-50 dark:bg-slate-900/90 border-t border-slate-200 dark:border-slate-800 flex items-center gap-2 shrink-0"
           >
-            <div className="flex items-center gap-1.5 text-blue-400 font-bold text-xs select-none">
+            <div className="flex items-center gap-1.5 text-blue-700 dark:text-blue-400 font-bold text-xs select-none">
               <span>aegis</span>
-              <span className="text-emerald-400">&gt;</span>
+              <span className="text-emerald-700 dark:text-emerald-400">&gt;</span>
             </div>
 
             <input
@@ -272,14 +272,14 @@ export const DockedTerminal: React.FC<DockedTerminalProps> = ({
               onChange={(e) => setCommandInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="type 'help', 'status', 'verify', 'pqc', 'scan gmail.com', 'report'..."
-              className="flex-1 bg-transparent text-xs text-white placeholder-slate-600 focus:outline-none font-mono"
+              className="flex-1 bg-transparent text-xs text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none font-mono"
               autoComplete="off"
               spellCheck={false}
             />
 
             <button
               type="submit"
-              className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+              className="p-1 rounded text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               title="Execute Command (Enter)"
             >
               <CornerDownLeft size={13} />
