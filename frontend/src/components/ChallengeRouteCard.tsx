@@ -23,19 +23,19 @@ export const ChallengeRouteCard: React.FC<ChallengeRouteCardProps> = ({
   const unknownProbes = signals.filter((s) => s.value === null).length;
 
   return (
-    <div className={`${className} bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-md p-5 transition-colors hover:border-cyan-500/50 flex flex-col justify-between`}>
+    <div className={`${className} bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800/80 rounded-md p-5 transition-colors hover:border-cyan-500/50 flex flex-col justify-between`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Route size={15} className="text-emerald-600 dark:text-emerald-400" />
-          <span className="text-[11px] font-semibold tracking-widest text-slate-500 dark:text-slate-400 uppercase">
+          <span className="uppercase tracking-[0.2em] text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400">
             Challenge Routes · Ingress Probes
           </span>
         </div>
         <button
           type="button"
           onClick={onExpand}
-          className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+          className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
           title="Inspect Routes"
         >
           <ArrowUpRight size={14} />
@@ -45,8 +45,8 @@ export const ChallengeRouteCard: React.FC<ChallengeRouteCardProps> = ({
       {/* Bar Chart */}
       {totalProbes === 0 ? (
         <div className="h-28 flex flex-col items-center justify-center gap-1 px-1 pt-2 pb-1 text-center">
-          <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400 tracking-wider">INSUFFICIENT DATA</span>
-          <span className="text-[9px] font-mono text-slate-400 dark:text-slate-500 tracking-wider">
+          <span className="text-[11px] font-mono text-slate-600 dark:text-slate-300 tracking-wider">INSUFFICIENT DATA</span>
+          <span className="text-[9px] font-mono text-slate-500 dark:text-slate-500 tracking-wider">
             NO CHECKS OR PROTOCOL PROBES IN SCAN RESPONSE
           </span>
         </div>

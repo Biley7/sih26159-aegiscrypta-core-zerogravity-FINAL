@@ -39,7 +39,7 @@ export const ActivityTrendCard: React.FC<ActivityTrendCardProps> = ({
       : score >= 60
         ? 'text-amber-600 dark:text-amber-400'
         : 'text-rose-600 dark:text-rose-400'
-    : 'text-slate-400 dark:text-slate-500';
+    : 'text-slate-500 dark:text-slate-400';
   const summary = hasScore
     ? score >= 80
       ? 'Latest scan landed in the healthy band. Score is response-derived.'
@@ -83,19 +83,19 @@ export const ActivityTrendCard: React.FC<ActivityTrendCardProps> = ({
     : 'No Cert Data';
 
   return (
-    <div className={`${className} bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-md p-5 transition-colors hover:border-cyan-500/50 flex flex-col justify-between`}>
+    <div className={`${className} bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800/80 rounded-md p-5 transition-colors hover:border-cyan-500/50 flex flex-col justify-between`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Activity size={14} className="text-cyan-600 dark:text-cyan-400" />
-          <span className="text-[11px] font-semibold tracking-widest text-slate-500 dark:text-slate-400 uppercase">
+          <span className="uppercase tracking-[0.2em] text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400">
             Posture Composition · Assurance
           </span>
         </div>
         <button
           type="button"
           onClick={onExpand}
-          className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
+          className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-cyan-700 dark:hover:text-cyan-400 transition-colors"
           title="Inspect Activity Stream"
         >
           <ChevronRight size={15} />
@@ -105,7 +105,7 @@ export const ActivityTrendCard: React.FC<ActivityTrendCardProps> = ({
       {/* Snippet: Badge + Description text */}
       <div className="flex items-center gap-3 my-2 p-3 rounded border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40">
         <div className="w-10 h-10 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center shrink-0">
-          <span className={`text-lg font-bold font-mono tracking-wider ${gradeColor}`}>
+          <span className={`text-lg font-bold font-mono tracking-tight ${gradeColor}`}>
             {grade ?? '—'}
           </span>
         </div>
@@ -120,7 +120,7 @@ export const ActivityTrendCard: React.FC<ActivityTrendCardProps> = ({
           const barColor = m.value === null ? '#94a3b8' : m.color;
           return (
             <div key={idx} className="flex items-center justify-between gap-3">
-              <span className="text-[10px] text-slate-500 dark:text-slate-400 font-sans truncate flex-1 tracking-wide">
+              <span className="text-[10px] font-medium text-slate-700 dark:text-slate-300 font-sans truncate flex-1 tracking-wide">
                 {m.label}
               </span>
               <div className="w-20 h-1.5 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden shrink-0">
@@ -132,7 +132,7 @@ export const ActivityTrendCard: React.FC<ActivityTrendCardProps> = ({
                   }}
                 />
               </div>
-              <span className={`text-[10px] font-semibold w-10 text-right shrink-0 tracking-wider ${m.value === null ? 'text-slate-400 dark:text-slate-500' : 'text-cyan-700 dark:text-cyan-400/90'}`}>
+              <span className={`text-[10px] font-semibold font-mono w-10 text-right shrink-0 tracking-tight ${m.value === null ? 'text-slate-500 dark:text-slate-400' : 'text-cyan-700 dark:text-cyan-400/90'}`}>
                 {m.value === null ? 'N/A' : `${m.value}%`}
               </span>
             </div>

@@ -126,7 +126,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   </div>
                   {settings.theme === 'dark' && <Check size={12} className="text-blue-500 dark:text-blue-400" />}
                 </div>
-                <span className="text-[10px] text-slate-400 dark:text-slate-500 block">#090D16 SOC Base</span>
+                <span className="text-[10px] text-slate-500 dark:text-slate-500 block">#090D16 SOC Base</span>
               </button>
 
               {/* Slate Light */}
@@ -146,7 +146,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   </div>
                   {settings.theme === 'light' && <Check size={12} className="text-blue-500 dark:text-blue-400" />}
                 </div>
-                <span className="text-[10px] text-slate-400 dark:text-slate-500 block">#F8FAFC Daylight</span>
+                <span className="text-[10px] text-slate-500 dark:text-slate-500 block">#F8FAFC Daylight</span>
               </button>
 
               {/* High Contrast OLED */}
@@ -166,7 +166,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   </div>
                   {settings.theme === 'high-contrast' && <Check size={12} className="text-blue-500 dark:text-blue-400" />}
                 </div>
-                <span className="text-[10px] text-slate-400 dark:text-slate-500 block">OLED High-Contrast</span>
+                <span className="text-[10px] text-slate-500 dark:text-slate-500 block">OLED High-Contrast</span>
               </button>
             </div>
           </section>

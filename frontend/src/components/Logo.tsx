@@ -29,7 +29,7 @@ export const Logo: React.FC<LogoProps> = ({
           src={logoSrc}
           alt="Aegiscripta Logo"
           style={{ height: size, width: 'auto' }}
-          className="object-contain max-w-[36px] drop-shadow-sm"
+          className="object-contain max-w-[36px]"
           onError={() => {
             if (logoSrc !== '/logo.svg') {
               setLogoSrc('/logo.svg');
@@ -41,7 +41,7 @@ export const Logo: React.FC<LogoProps> = ({
       ) : (
         /* Fallback Clean Geometric SVG Shield Crest */
         <div
-          className="flex items-center justify-center rounded-lg bg-blue-600/15 border border-blue-500/30 text-blue-400"
+          className="flex items-center justify-center rounded-lg bg-blue-600/15 border border-blue-500/30 text-blue-600 dark:text-blue-400"
           style={{ width: size, height: size }}
         >
           <svg viewBox="0 0 24 24" className="w-5 h-5 fill-none stroke-current" strokeWidth="2">
@@ -55,11 +55,11 @@ export const Logo: React.FC<LogoProps> = ({
       {/* Brand Text */}
       {showText && (
         <div className="flex flex-col leading-none">
-          <span className="text-base font-bold tracking-tight text-slate-100 font-sans flex items-center gap-1.5">
+          <span className="text-base font-bold tracking-tight text-slate-900 dark:text-white font-sans flex items-center gap-1.5">
             Aegiscripta
             <span className="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block"></span>
           </span>
-          <span className="text-[9px] tracking-wider text-slate-400 font-mono font-medium uppercase mt-0.5">
+          <span className="text-[9px] tracking-[0.2em] text-slate-500 dark:text-slate-400 font-mono font-bold uppercase mt-0.5">
             CYBER POSTURE OPS
           </span>
         </div>

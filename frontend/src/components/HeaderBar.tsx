@@ -61,7 +61,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
                 : 'border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-600'
             }`}
           >
-            <Search size={16} className={`transition-colors shrink-0 ${isFocused ? 'text-cyan-600 dark:text-cyan-400' : 'text-slate-400'}`} />
+            <Search size={16} className={`transition-colors shrink-0 ${isFocused ? 'text-cyan-600 dark:text-cyan-400' : 'text-slate-500 dark:text-slate-400'}`} />
             <input
               type="text"
               value={searchQuery}
@@ -69,13 +69,13 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
               placeholder="Target domain (e.g. gmail.com, defense.gov.in)..."
-              className="bg-transparent text-xs sm:text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none w-full font-sans"
+              className="bg-transparent text-xs sm:text-sm font-mono tracking-tight text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-500 focus:outline-none w-full"
               disabled={isScanning}
             />
             {isScanning ? (
               <RotateCcw size={14} className="text-cyan-400 animate-spin shrink-0" />
             ) : (
-              <div className="hidden sm:flex items-center gap-1 text-[10px] font-mono text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700 shrink-0">
+              <div className="hidden sm:flex items-center gap-1 text-[10px] font-mono tracking-tight text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700 shrink-0">
                 <Command size={10} />
                 <span>K</span>
               </div>
@@ -108,7 +108,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
       <div className="flex items-center gap-3 shrink-0">
         {/* Backend Online/Offline Status Indicator */}          <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 text-xs font-mono text-slate-600 dark:text-slate-300">
           <span className={`w-2 h-2 rounded-full ${backendOnline === true ? 'bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : backendOnline === false ? 'bg-rose-400' : 'bg-amber-400'}`}></span>
-          <span className="text-slate-500 dark:text-slate-400">ENGINE:</span>
+          <span className="text-slate-600 dark:text-slate-400">ENGINE:</span>
           <span className={`font-semibold ${backendOnline === true ? 'text-cyan-700 dark:text-cyan-300' : backendOnline === false ? 'text-rose-600 dark:text-rose-300' : 'text-amber-600 dark:text-amber-300'}`}>
             {backendOnline === true ? 'ONLINE' : backendOnline === false ? 'OFFLINE' : 'CHECKING'}
           </span>

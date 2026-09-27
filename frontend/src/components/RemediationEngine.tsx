@@ -56,11 +56,11 @@ const cvssForFinding = (f: SecurityFinding, aggregate: CvssMetrics | undefined, 
 };
 
 const cvssBadgeClass = (score: number): string => {
-  if (score >= 9.0) return 'text-rose-400 bg-rose-500/10 border-rose-500/30';
-  if (score >= 7.0) return 'text-orange-400 bg-orange-500/10 border-orange-500/30';
-  if (score >= 4.0) return 'text-amber-400 bg-amber-500/10 border-amber-500/30';
-  if (score >= 0.2) return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30';
-  return 'text-slate-400 bg-slate-500/10 border-slate-500/30';
+  if (score >= 9.0) return 'text-rose-700 dark:text-rose-400 bg-rose-500/10 border-rose-500/30';
+  if (score >= 7.0) return 'text-orange-700 dark:text-orange-400 bg-orange-500/10 border-orange-500/30';
+  if (score >= 4.0) return 'text-amber-700 dark:text-amber-400 bg-amber-500/10 border-amber-500/30';
+  if (score >= 0.2) return 'text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/30';
+  return 'text-slate-500 dark:text-slate-400 bg-slate-500/10 border-slate-500/30';
 };
 
 export const RemediationEngine: React.FC<RemediationEngineProps> = ({
@@ -252,13 +252,13 @@ echo "[AegisCrypta] Hardening completed successfully."`
 
       {/* Aggregate CVSS Metrics Banner */}
       {cvssMetrics && (
-        <div className="mb-4 p-4 rounded-md bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 hover:border-cyan-500/50 transition-colors flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
+        <div className="mb-4 p-4 rounded-md bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800/80 hover:border-cyan-500/50 transition-colors flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 flex items-center justify-center">
               <Target size={19} className="text-rose-600 dark:text-rose-400" />
             </div>
             <div>
-              <div className="text-[11px] font-semibold tracking-widest text-slate-500 dark:text-slate-400 uppercase">
+              <div className="uppercase tracking-[0.2em] text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400">
                 CVSS v3.1 Risk Metrics · Aggregate Scan Posture
               </div>
               <div className="flex items-center gap-3 mt-1">
@@ -272,7 +272,7 @@ echo "[AegisCrypta] Hardening completed successfully."`
                   </span>
                 )}
                 {cvssMetrics.vector_string && (
-                  <code className="hidden md:inline font-mono text-[10px] text-slate-500 dark:text-slate-400 ml-2 truncate max-w-xs" title={cvssMetrics.vector_string}>
+                  <code className="hidden md:inline font-mono text-[10px] tracking-tight text-slate-600 dark:text-slate-400 ml-2 truncate max-w-xs" title={cvssMetrics.vector_string}>
                     {cvssMetrics.vector_string}
                   </code>
                 )}
@@ -283,13 +283,13 @@ echo "[AegisCrypta] Hardening completed successfully."`
             <div className="flex items-center gap-6 font-mono text-[11px]">
               {cvssMetrics.exploitability_score !== undefined && (
                 <div className="text-right">
-                  <div className="text-slate-500 dark:text-slate-400 uppercase tracking-widest text-[10px]">Exploitability</div>
+                  <div className="text-slate-600 dark:text-slate-400 uppercase tracking-[0.2em] text-[10px]">Exploitability</div>
                   <div className="text-amber-600 dark:text-amber-400 font-bold text-sm">{cvssMetrics.exploitability_score.toFixed(1)}</div>
                 </div>
               )}
               {cvssMetrics.impact_score !== undefined && (
                 <div className="text-right">
-                  <div className="text-slate-500 dark:text-slate-400 uppercase tracking-widest text-[10px]">Impact</div>
+                  <div className="text-slate-600 dark:text-slate-400 uppercase tracking-[0.2em] text-[10px]">Impact</div>
                   <div className="text-rose-600 dark:text-rose-400 font-bold text-sm">{cvssMetrics.impact_score.toFixed(1)}</div>
                 </div>
               )}
@@ -299,9 +299,9 @@ echo "[AegisCrypta] Hardening completed successfully."`
       )}
 
       {/* Sortable Findings Table */}
-      <div className="mb-5 rounded-md overflow-hidden bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 hover:border-cyan-500/50 transition-colors">
+      <div className="mb-5 rounded-md overflow-hidden bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800/80 hover:border-cyan-500/50 transition-colors">
         <table className="w-full text-left font-mono">
-          <thead className="bg-slate-100 dark:bg-slate-950/70 text-slate-500 dark:text-slate-400 uppercase text-[10px] tracking-widest border-b border-slate-200 dark:border-slate-800">
+          <thead className="bg-slate-100 dark:bg-slate-950/70 text-slate-600 dark:text-slate-400 uppercase text-[10px] tracking-[0.2em] border-b border-slate-200 dark:border-slate-800">
             <tr>
               <th className="px-5 py-3.5 w-[42%]">
                 <button
@@ -402,7 +402,7 @@ echo "[AegisCrypta] Hardening completed successfully."`
           </tbody>
         </table>
         {sortedFindings.length > 0 && (
-          <div className="px-5 py-2.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/80 text-[10px] text-slate-500 dark:text-slate-400 font-mono flex items-center justify-between">
+          <div className="px-5 py-2.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/80 text-[10px] text-slate-600 dark:text-slate-400 font-mono flex items-center justify-between">
             <span className="tracking-wider uppercase">Showing {sortedFindings.length} Finding{sortedFindings.length === 1 ? '' : 's'}</span>
             <span className="tracking-wider uppercase">Sorted by {sortKey.toUpperCase()} · {sortDir.toUpperCase()}</span>
           </div>

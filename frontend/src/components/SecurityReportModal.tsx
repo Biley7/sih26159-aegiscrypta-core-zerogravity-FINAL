@@ -106,7 +106,7 @@ export const SecurityReportModal: React.FC<SecurityReportModalProps> = ({
           <div className="flex items-center gap-3">
             <Logo size={26} />
             <div className="border-l border-slate-300 dark:border-slate-700 pl-3">
-              <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold block">
+              <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 font-bold block">
                 Official Security Dossier
               </span>
               <h2 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">
@@ -139,18 +139,18 @@ export const SecurityReportModal: React.FC<SecurityReportModalProps> = ({
           {/* Executive Overview Banner */}
           <div className="p-4 rounded-md bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <span className="text-xs font-mono text-slate-500 dark:text-slate-400 uppercase">Target Domain</span>
+              <span className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Target Domain</span>
               <div className="text-xl font-bold font-mono text-slate-900 dark:text-white">{domain}</div>
-              <span className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 block font-mono">
+              <span className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 block font-mono tracking-tight">
                 Audit Timestamp: {scanData?.scanned_at ? new Date(scanData.scanned_at).toUTCString() : 'No scan timestamp reported'}
               </span>
             </div>
 
             <div className="flex items-center gap-3">
               <div className="text-right">
-                <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400 block uppercase">Posture Grade</span>
+                <span className="text-[10px] font-mono font-bold tracking-[0.2em] text-slate-500 dark:text-slate-400 block uppercase">Posture Grade</span>
                 <span className={`text-xs font-bold font-mono ${
-                  !hasScore ? 'text-slate-500' : score >= 80 ? 'text-emerald-500 dark:text-emerald-400' : score >= 60 ? 'text-amber-500 dark:text-amber-400' : 'text-rose-500 dark:text-rose-400'
+                  !hasScore ? 'text-slate-500 dark:text-slate-400' : score >= 80 ? 'text-emerald-500 dark:text-emerald-400' : score >= 60 ? 'text-amber-500 dark:text-amber-400' : 'text-rose-500 dark:text-rose-400'
                 }`}>
                   {!hasScore ? 'UNGRADED' : score >= 80 ? 'SOC GRADE A' : score >= 60 ? 'SOC GRADE B' : 'CRITICAL'}
                 </span>
@@ -165,7 +165,7 @@ export const SecurityReportModal: React.FC<SecurityReportModalProps> = ({
 
           {/* Key Findings Matrix */}
           <div>
-            <h3 className="text-xs font-mono uppercase tracking-wider text-slate-600 dark:text-slate-300 font-bold mb-2.5">
+            <h3 className="uppercase tracking-[0.2em] text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-2.5">
               Protocol Compliance Checklist
             </h3>
             {reportItems.length === 0 ? (
@@ -192,7 +192,7 @@ export const SecurityReportModal: React.FC<SecurityReportModalProps> = ({
                             ? 'text-amber-500 dark:text-amber-400'
                             : item.status === 'fail'
                               ? 'text-rose-500 dark:text-rose-400'
-                              : 'text-slate-400 dark:text-slate-500'
+                              : 'text-slate-500 dark:text-slate-400'
                         }`}
                       />
                     )}

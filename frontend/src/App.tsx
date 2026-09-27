@@ -530,7 +530,7 @@ export function App() {
               <button
                 type="button"
                 onClick={() => setActiveTab('overview')}
-                className="text-blue-400 hover:text-white underline text-[11px]"
+                className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-white underline text-[11px]"
               >
                 Return to Full Overview
               </button>
@@ -540,7 +540,7 @@ export function App() {
           {/* SESSIONS TAB: Passive PCAP Forensics Stream Reassembly */}
           {activeTab === 'sessions' ? (
             <div className="space-y-5">
-              <section className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-md p-5 hover:border-cyan-500/50 transition-colors">
+              <section className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800/80 rounded-md p-5 hover:border-cyan-500/50 transition-colors">
                 <div className="flex items-center justify-between mb-5 pb-4 border-b border-slate-200 dark:border-slate-800/60">
                   <div>
                     <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">

@@ -226,7 +226,7 @@ export const DockedTerminal: React.FC<DockedTerminalProps> = ({
           {/* Scrollable log stream */}
           <div className="flex-1 overflow-y-auto p-3 space-y-1 text-xs text-slate-700 dark:text-slate-300 custom-scrollbar select-text bg-white dark:bg-slate-950">
             {logs.length === 0 ? (
-              <div className="py-4 text-center text-slate-400 dark:text-slate-600 text-xs italic">
+              <div className="py-4 text-center text-slate-500 dark:text-slate-600 text-xs italic">
                 Terminal output buffer is empty. Type 'help' below or enter a target domain above.
               </div>
             ) : (
@@ -235,7 +235,7 @@ export const DockedTerminal: React.FC<DockedTerminalProps> = ({
                   key={log.id}
                   className="flex items-start gap-2 hover:bg-slate-100 dark:hover:bg-slate-900/60 px-1 py-0.5 rounded leading-relaxed"
                 >
-                  <span className="text-[11px] text-slate-400 dark:text-slate-500 shrink-0 select-none">
+                  <span className="text-[11px] text-slate-500 dark:text-slate-500 shrink-0 select-none">
                     {log.timestamp}
                   </span>
                   <span className="shrink-0 select-none">
@@ -272,7 +272,7 @@ export const DockedTerminal: React.FC<DockedTerminalProps> = ({
               onChange={(e) => setCommandInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="type 'help', 'status', 'verify', 'pqc', 'scan gmail.com', 'report'..."
-              className="flex-1 bg-transparent text-xs text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none font-mono"
+              className="flex-1 bg-transparent text-xs text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-600 focus:outline-none font-mono"
               autoComplete="off"
               spellCheck={false}
             />

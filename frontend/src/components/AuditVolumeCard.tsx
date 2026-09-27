@@ -33,11 +33,11 @@ export const AuditVolumeCard: React.FC<AuditVolumeCardProps> = ({
         : { label: 'All Checks Healthy', className: 'text-emerald-700 dark:text-emerald-400' };
 
   return (
-    <div className={`${className} bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-md p-5 transition-colors hover:border-cyan-500/50 flex flex-col justify-between`}>
+    <div className={`${className} bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800/80 rounded-md p-5 transition-colors hover:border-cyan-500/50 flex flex-col justify-between`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-semibold tracking-widest text-slate-500 dark:text-slate-400 uppercase">
+          <span className="uppercase tracking-[0.2em] text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400">
             Audit Volume · Core Inquiries
           </span>
           <span className={`text-[10px] font-mono tracking-widest uppercase ${hasChecks ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-500'}`}>
@@ -47,7 +47,7 @@ export const AuditVolumeCard: React.FC<AuditVolumeCardProps> = ({
         <button
           type="button"
           onClick={onExpand}
-          className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
+          className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-cyan-700 dark:hover:text-cyan-400 transition-colors"
           title="Inspect Inquiries"
         >
           <ChevronRight size={15} />
@@ -57,8 +57,8 @@ export const AuditVolumeCard: React.FC<AuditVolumeCardProps> = ({
       {/* Bar Chart Container */}
       {bars.length === 0 ? (
         <div className="h-28 flex flex-col items-center justify-center gap-1 px-1 pt-2 pb-1 text-center">
-          <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400 tracking-wider">INSUFFICIENT DATA</span>
-          <span className="text-[9px] font-mono text-slate-400 dark:text-slate-500 tracking-wider">
+          <span className="text-[11px] font-mono text-slate-600 dark:text-slate-300 tracking-wider">INSUFFICIENT DATA</span>
+          <span className="text-[9px] font-mono text-slate-500 dark:text-slate-500 tracking-wider">
             NO CHECKS OR PROTOCOL PROBES IN SCAN RESPONSE
           </span>
         </div>

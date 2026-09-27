@@ -112,7 +112,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Navigation Section */}
         <div className="flex-1 py-4 px-3 space-y-1 overflow-y-auto custom-scrollbar">
-          <div className="px-3 pb-2 text-[10px] font-mono uppercase tracking-wider text-slate-500 dark:text-slate-400 font-semibold">
+          <div className="px-3 pb-2 text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 font-bold">
             Operations Matrix
           </div>
 
@@ -137,7 +137,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   className={`w-full group flex items-center justify-between px-3.5 py-2 rounded text-sm font-medium transition-colors duration-200 relative ${
                     isActive
                       ? 'bg-cyan-500/10 dark:bg-gradient-to-r dark:from-cyan-500/15 dark:to-transparent text-cyan-700 dark:text-cyan-300 font-semibold border-l-2 border-cyan-500 dark:border-cyan-400'
-                      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 border-l-2 border-transparent'
+                      : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 border-l-2 border-transparent'
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -146,7 +146,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       className={`transition-colors ${
                         isActive
                           ? 'text-cyan-600 dark:text-cyan-400'
-                          : 'text-slate-400 group-hover:text-cyan-600 dark:group-hover:text-cyan-300'
+                          : 'text-slate-700 dark:text-slate-300 group-hover:text-cyan-700 dark:group-hover:text-cyan-300'
                       }`}
                     />
                     <span className="tracking-tight text-xs sm:text-sm">{item.label}</span>
@@ -159,12 +159,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       </span>
                     )}
                     {typeof item.count === 'number' && (
-                      <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
+                      <span className="text-[11px] font-mono tracking-tight text-slate-700 dark:text-slate-300">
                         {item.count}
                       </span>
                     )}
                     {item.hasChildren && (
-                      <span className="text-slate-400 group-hover:text-cyan-600 dark:group-hover:text-cyan-300 transition-transform">
+                      <span className="text-slate-500 dark:text-slate-400 group-hover:text-cyan-700 dark:group-hover:text-cyan-300 transition-transform">
                         {isVerificationExpanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
                       </span>
                     )}
@@ -185,7 +185,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                           onSelectTab('verification');
                           if (onCloseMobile) onCloseMobile();
                         }}
-                        className="w-full text-left py-1 px-2 text-xs font-mono text-slate-500 dark:text-slate-400 hover:text-cyan-700 dark:hover:text-cyan-300 hover:bg-slate-100 dark:hover:bg-slate-800/40 rounded transition-colors flex items-center justify-between"
+                        className="w-full text-left py-1 px-2 text-xs font-mono text-slate-600 dark:text-slate-400 hover:text-cyan-700 dark:hover:text-cyan-300 hover:bg-slate-100 dark:hover:bg-slate-800/40 rounded transition-colors flex items-center justify-between"
                       >
                         <span className="truncate">{sub.label}</span>
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400/80"></span>
@@ -229,12 +229,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </span>
               <div className="flex flex-col">
                 <span className="text-[11px] font-semibold text-slate-800 dark:text-slate-200">API Health</span>
-                <span className={`text-[9px] font-mono ${backendOnline === true ? 'text-emerald-400' : backendOnline === false ? 'text-rose-400' : 'text-slate-400'}`}>
+                <span className={`text-[9px] font-mono ${backendOnline === true ? 'text-emerald-600 dark:text-emerald-400' : backendOnline === false ? 'text-rose-600 dark:text-rose-400' : 'text-slate-500 dark:text-slate-400'}`}>
                   {backendOnline === true ? 'ENDPOINT ONLINE' : backendOnline === false ? 'ENDPOINT UNREACHABLE' : 'CHECKING…'}
                 </span>
               </div>
             </div>
-            <Radio size={13} className={backendOnline ? 'text-cyan-600 dark:text-cyan-400 animate-pulse' : 'text-slate-400 dark:text-slate-500'} />
+            <Radio size={13} className={backendOnline ? 'text-cyan-600 dark:text-cyan-400 animate-pulse' : 'text-slate-500 dark:text-slate-400'} />
           </div>
 
           {/* Settings & Status Buttons */}
@@ -242,9 +242,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <button
               type="button"
               onClick={onOpenSettings}
-              className="flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800/60 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-700 active:scale-95 transition-colors"
+              className="flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded text-xs font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800/60 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-700 active:scale-95 transition-colors"
             >
-              <Settings size={13} className="text-slate-500 dark:text-slate-400" />
+              <Settings size={13} className="text-slate-600 dark:text-slate-400" />
               <span>Settings</span>
             </button>
             <button
@@ -254,7 +254,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 onSelectTab('overview');
                 onStatusClick?.();
               }}
-              className="flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800/60 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-700 active:scale-95 transition-colors disabled:opacity-60 disabled:cursor-wait"
+              className="flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded text-xs font-medium text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800/60 hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-700 active:scale-95 transition-colors disabled:opacity-60 disabled:cursor-wait"
               title="Run a live GET /health probe against the configured endpoint"
             >
               <Activity size={13} className={`text-cyan-600 dark:text-cyan-400 ${isStatusChecking ? 'animate-spin' : ''}`} />

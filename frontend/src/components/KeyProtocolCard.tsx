@@ -213,10 +213,10 @@ export const KeyProtocolCard: React.FC<KeyProtocolCardProps> = ({
   const currentRows = rows[activeMode];
 
   return (
-    <div className={`${className} bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-md p-5 hover:border-cyan-500/50 transition-colors flex flex-col justify-between`}>
+    <div className={`${className} bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800/80 rounded-md p-5 hover:border-cyan-500/50 transition-colors flex flex-col justify-between`}>
       {/* Top Bar: Mode Switcher */}
       <div className="flex items-center justify-between gap-2 mb-4">
-        <span className="text-[11px] font-semibold tracking-widest text-slate-600 dark:text-slate-400 uppercase">
+        <span className="uppercase tracking-[0.2em] text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400">
           Key Protocol Monitor
         </span>
 
@@ -282,8 +282,8 @@ export const KeyProtocolCard: React.FC<KeyProtocolCardProps> = ({
                   />
                 </div>
                 <span
-                  className={`text-[11px] font-semibold w-16 text-right tracking-wider ${
-                    row.unknown ? 'text-slate-400 dark:text-slate-500' : row.progress >= 80 ? 'text-cyan-700 dark:text-cyan-400/90' : row.progress >= 30 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400'
+                  className={`text-[11px] font-semibold font-mono w-16 text-right tracking-tight ${
+                    row.unknown ? 'text-slate-500 dark:text-slate-400' : row.progress >= 80 ? 'text-cyan-700 dark:text-cyan-400/90' : row.progress >= 30 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400'
                   }`}
                 >
                   {row.metric}

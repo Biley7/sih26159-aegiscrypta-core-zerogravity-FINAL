@@ -39,23 +39,23 @@ export const ActiveReportCard: React.FC<ActiveReportCardProps> = ({
   ];
 
   return (
-    <div className={`${className} bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-md p-5 transition-colors hover:border-cyan-500/50 flex flex-col justify-between`}>
+    <div className={`${className} bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800/80 rounded-md p-5 transition-colors hover:border-cyan-500/50 flex flex-col justify-between`}>
       {/* Top Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-semibold tracking-widest text-slate-500 dark:text-slate-400 uppercase">
+          <span className="uppercase tracking-[0.2em] text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400">
             Active Security Report
           </span>
           <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 dark:bg-cyan-400 animate-pulse"></span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400">
+          <span className="text-[10px] font-mono tracking-tight text-slate-600 dark:text-slate-400">
             {activeScore !== null && activeScore !== undefined ? `${activeScore}/100` : 'N/A'}
           </span>
           <button
             type="button"
             onClick={onExpand}
-            className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
+            className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-cyan-700 dark:hover:text-cyan-400 transition-colors"
             title="Open Report Details"
           >
             <ChevronRight size={15} />
@@ -92,7 +92,7 @@ export const ActiveReportCard: React.FC<ActiveReportCardProps> = ({
           <text x="120" y="42" textAnchor="middle" className="fill-slate-500" fontSize="9" fontFamily="monospace" letterSpacing="1">
             INSUFFICIENT DATA
           </text>
-          <text x="120" y="68" textAnchor="middle" className="fill-slate-400 dark:fill-slate-500" fontSize="6.5" fontFamily="monospace">
+          <text x="120" y="68" textAnchor="middle" className="fill-slate-500 dark:fill-slate-500" fontSize="6.5" fontFamily="monospace">
             NO HISTORICAL TIME SERIES IN SCAN RESPONSE
           </text>
         </svg>
@@ -102,15 +102,15 @@ export const ActiveReportCard: React.FC<ActiveReportCardProps> = ({
       <div className="pt-3 border-t border-slate-200 dark:border-slate-800 grid grid-cols-4 gap-1.5 text-center font-mono">
         {stats.map((st, i) => (
           <div key={i} className="flex flex-col gap-0.5">
-            <span className={`text-xs font-bold tracking-wider ${
-              st.value === 'N/A' ? 'text-slate-400 dark:text-slate-500' :
+            <span className={`text-xs font-bold font-mono tracking-tight ${
+              st.value === 'N/A' ? 'text-slate-500 dark:text-slate-400' :
               st.label === 'Critical' ? 'text-rose-600 dark:text-rose-400' :
               st.label === 'Warn' ? 'text-amber-600 dark:text-amber-400' :
               st.label === 'PFS' ? 'text-cyan-700 dark:text-cyan-400' : 'text-emerald-700 dark:text-emerald-400'
             }`}>
               {st.value}
             </span>
-            <span className="text-[9px] text-slate-500 dark:text-slate-400 tracking-widest uppercase">
+            <span className="text-[9px] text-slate-500 dark:text-slate-400 tracking-[0.2em] uppercase">
               {st.label}
             </span>
           </div>

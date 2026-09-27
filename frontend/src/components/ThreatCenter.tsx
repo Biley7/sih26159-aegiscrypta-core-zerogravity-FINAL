@@ -70,10 +70,10 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
       : null);
   const chainBadge = primaryCert
     ? primaryCert.chain_valid === true
-      ? { label: 'CHAIN VALID', badgeClass: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' }
+      ? { label: 'CHAIN VALID', badgeClass: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-400' }
       : primaryCert.chain_valid === false
-        ? { label: 'UNTRUSTED', badgeClass: 'bg-rose-500/10 border-rose-500/30 text-rose-400' }
-        : { label: 'UNVERIFIED', badgeClass: 'bg-amber-500/10 border-amber-500/30 text-amber-400' }
+        ? { label: 'UNTRUSTED', badgeClass: 'bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-400' }
+        : { label: 'UNVERIFIED', badgeClass: 'bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-400' }
     : { label: 'NO DATA', badgeClass: 'bg-slate-500/10 border-slate-500/30 text-slate-500 dark:text-slate-400' };
   const dkimSelector = typeof dkimCheck?.details?.selector === 'string' ? dkimCheck.details.selector : null;
   const dkimKeySize = typeof dkimCheck?.details?.key_size === 'number' ? dkimCheck.details.key_size : null;
@@ -84,11 +84,11 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
     : 'No Credential Data';
   const dkimBadge = dkimCheck
     ? dkimCheck.status === 'pass'
-      ? { label: 'ACTIVE', badgeClass: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' }
+      ? { label: 'ACTIVE', badgeClass: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-400' }
       : dkimCheck.status === 'warn'
-        ? { label: 'WARN', badgeClass: 'bg-amber-500/10 border-amber-500/30 text-amber-400' }
+        ? { label: 'WARN', badgeClass: 'bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-400' }
         : dkimCheck.status === 'fail'
-          ? { label: 'FAIL', badgeClass: 'bg-rose-500/10 border-rose-500/30 text-rose-400' }
+          ? { label: 'FAIL', badgeClass: 'bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-400' }
           : { label: 'UNKNOWN', badgeClass: 'bg-slate-500/10 border-slate-500/30 text-slate-500 dark:text-slate-300' }
     : { label: 'NO DATA', badgeClass: 'bg-slate-500/10 border-slate-500/30 text-slate-500 dark:text-slate-400' };
 
@@ -152,7 +152,7 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
   const badge = getClassificationBadge();
 
   return (
-    <div className={`${className} bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-md p-5 hover:border-cyan-500/50 transition-colors overflow-hidden`}>
+    <div className={`${className} bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800/80 rounded-md p-5 hover:border-cyan-500/50 transition-colors overflow-hidden`}>
       {cvssMetrics && (
         <div className="mb-5 rounded border border-amber-500/30 bg-amber-500/10 p-3 font-mono text-xs text-amber-800 dark:text-amber-100" aria-label="CVSS vulnerability metrics">
           <div className="flex flex-wrap items-center gap-2">
@@ -291,7 +291,7 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
                 <g transform={`rotate(${angle} 140 130)`}>
                   <polygon points="138,130 140,42 142,130" className="fill-slate-700 dark:fill-slate-100" />
                   <circle cx="140" cy="130" r="8" className="fill-white dark:fill-slate-900" stroke="#3b82f6" strokeWidth="2" />
-                  <circle cx="140" cy="130" r="3" className="fill-slate-400 dark:fill-slate-200" />
+                  <circle cx="140" cy="130" r="3" className="fill-slate-500 dark:fill-slate-200" />
                 </g>
               )}
             </svg>
@@ -307,7 +307,7 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
             <div className="flex items-center gap-2">
               <span className="text-xl font-bold font-mono text-slate-800 dark:text-slate-100">
                 {resolvedScore !== null ? resolvedScore : 'N/A'}
-                {resolvedScore !== null && <span className="text-slate-400 dark:text-slate-500 text-sm">/100</span>}
+                {resolvedScore !== null && <span className="text-slate-500 dark:text-slate-400 text-sm tracking-tight">/100</span>}
               </span>
             </div>
 
@@ -330,7 +330,7 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
           >
             <Sparkles size={13} className="text-blue-600 dark:text-blue-400" />
             <span>AI Forensic Audit</span>
-            <ExternalLink size={11} className="text-slate-400" />
+            <ExternalLink size={11} className="text-slate-500 dark:text-slate-400" />
           </button>
 
           {/* Neural Core + Network Nodes */}
@@ -476,7 +476,7 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
                 >
                   <div className="flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400">
                     <span className="truncate">{item.label}</span>
-                    <span className={`font-bold ${textColor}`}>{pct}%</span>
+                    <span className={`font-bold font-mono tracking-tight ${textColor}`}>{pct}%</span>
                   </div>
                   <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1.5 my-1.5 overflow-hidden">
                     <div
@@ -484,7 +484,7 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
                       style={{ width: `${Math.max(4, pct)}%` }}
                     />
                   </div>
-                  <span className="text-[9px] text-slate-400 dark:text-slate-500 truncate">{item.desc}</span>
+                  <span className="text-[9px] text-slate-500 dark:text-slate-500 truncate">{item.desc}</span>
                 </div>
               );
             })}

@@ -60,7 +60,7 @@ export const CertificateInspectorModal: React.FC<CertificateInspectorModalProps>
   };
 
   const panel = 'rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50';
-  const label = 'text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold block';
+  const label = 'text-[10px] uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 font-bold block';
 
   return (
     <div
@@ -100,7 +100,7 @@ export const CertificateInspectorModal: React.FC<CertificateInspectorModalProps>
                   </span>
                 )}
               </div>
-              <span className="text-xs font-mono text-slate-500 dark:text-slate-400">
+              <span className="text-xs font-mono tracking-tight text-slate-600 dark:text-slate-400">
                 Target: {domain}
               </span>
             </div>
@@ -146,7 +146,7 @@ export const CertificateInspectorModal: React.FC<CertificateInspectorModalProps>
                 identity, serial, validity window, or fingerprint is displayed because fabricated values would
                 misrepresent the audit.
               </p>
-              <p className="text-[10px] text-slate-400 dark:text-slate-500 font-mono pt-1">
+              <p className="text-[10px] text-slate-500 dark:text-slate-500 font-mono tracking-tight pt-1">
                 Run a scan against a domain with an auditable MX/STARTTLS endpoint to populate this view.
               </p>
             </div>
@@ -175,15 +175,15 @@ export const CertificateInspectorModal: React.FC<CertificateInspectorModalProps>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <span className="text-[10px] text-slate-500 block">Public Key Algorithm</span>
+                    <span className="text-[10px] font-medium text-slate-600 dark:text-slate-400 block">Public Key Algorithm</span>
                     <span className="font-semibold text-slate-800 dark:text-slate-200">{certData.algorithm}</span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-slate-500 block">Signature Algorithm</span>
+                    <span className="text-[10px] font-medium text-slate-600 dark:text-slate-400 block">Signature Algorithm</span>
                     <span className="font-semibold text-slate-800 dark:text-slate-200">{certData.signatureAlgorithm}</span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-slate-500 block">PQC Compatibility</span>
+                    <span className="text-[10px] font-medium text-slate-600 dark:text-slate-400 block">PQC Compatibility</span>
                     <span className={`font-semibold ${certData.pqcCompatibility === 'Evaluated by backend scan' ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}`}>
                       {certData.pqcCompatibility}
                     </span>
@@ -213,12 +213,12 @@ export const CertificateInspectorModal: React.FC<CertificateInspectorModalProps>
               {/* Serial & Validity Period */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className={`p-3 min-w-0 ${panel}`}>
-                  <span className="text-[10px] text-slate-500 block">Serial Number</span>
+                  <span className="text-[10px] font-medium text-slate-600 dark:text-slate-400 block">Serial Number</span>
                   <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 break-all">{certData.serialNumber}</span>
                 </div>
 
                 <div className={`p-3 min-w-0 ${panel}`}>
-                  <span className="text-[10px] text-slate-500 block">Validity Period</span>
+                  <span className="text-[10px] font-medium text-slate-600 dark:text-slate-400 block">Validity Period</span>
                   <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 break-all">
                     {certData.validFrom} → {certData.validTo}
                   </span>
@@ -226,7 +226,7 @@ export const CertificateInspectorModal: React.FC<CertificateInspectorModalProps>
 
                 <div className={`p-3 flex items-center justify-between min-w-0 ${panel}`}>
                   <div className="min-w-0">
-                    <span className="text-[10px] text-slate-500 block">Validity Remaining</span>
+                    <span className="text-[10px] font-medium text-slate-600 dark:text-slate-400 block">Validity Remaining</span>
                     <span className={`text-xs font-semibold ${certData.isExpired ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-700 dark:text-emerald-400'}`}>
                       {certData.daysRemaining === null
                         ? 'Expiry not reported'
@@ -235,7 +235,7 @@ export const CertificateInspectorModal: React.FC<CertificateInspectorModalProps>
                           : `${certData.daysRemaining} days remaining`}
                     </span>
                   </div>
-                  <Calendar size={16} className="text-slate-400 shrink-0" />
+                  <Calendar size={16} className="text-slate-500 dark:text-slate-400 shrink-0" />
                 </div>
               </div>
 

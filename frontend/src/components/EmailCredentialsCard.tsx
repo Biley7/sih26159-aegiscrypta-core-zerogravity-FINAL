@@ -87,19 +87,19 @@ export const EmailCredentialsCard: React.FC<EmailCredentialsCardProps> = ({
   const line1Path = `M ${line1Points.map((p) => `${p.x} ${p.y}`).join(' L ')}`;
 
   return (
-    <div className={`${className} bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-md p-5 transition-colors hover:border-cyan-500/50 flex flex-col justify-between`}>
+    <div className={`${className} bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800/80 rounded-md p-5 transition-colors hover:border-cyan-500/50 flex flex-col justify-between`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <MailCheck size={15} className="text-cyan-600 dark:text-cyan-400" />
-          <span className="text-[11px] font-semibold tracking-widest text-slate-500 dark:text-slate-400 uppercase">
+          <span className="uppercase tracking-[0.2em] text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400">
             Email Auth · TLS Credentials
           </span>
         </div>
         <button
           type="button"
           onClick={onExpand}
-          className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
+          className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-cyan-700 dark:hover:text-cyan-400 transition-colors"
           title="Inspect Handshakes"
         >
           <ArrowUpRight size={14} />
@@ -122,7 +122,7 @@ export const EmailCredentialsCard: React.FC<EmailCredentialsCardProps> = ({
           <path
             d={line1Path}
             fill="none"
-            className="stroke-cyan-600 dark:stroke-[#00f0ff]"
+            className="stroke-cyan-600 dark:stroke-cyan-400"
             strokeWidth="2.2"
             strokeLinecap="round"
           />
@@ -150,7 +150,7 @@ export const EmailCredentialsCard: React.FC<EmailCredentialsCardProps> = ({
               x={pt.x}
               y="88"
               textAnchor="middle"
-              className="fill-slate-400 dark:fill-slate-500"
+              className="fill-slate-500 dark:fill-slate-500"
               fontSize="6.5"
               fontFamily="monospace"
             >
@@ -161,14 +161,14 @@ export const EmailCredentialsCard: React.FC<EmailCredentialsCardProps> = ({
       </div>
 
       {/* Axis & Legend */}
-      <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-[10px] font-mono text-slate-500 dark:text-slate-400">
+      <div className="pt-3 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between text-[10px] font-mono text-slate-600 dark:text-slate-400">
         <div className="flex items-center gap-4">
           <span className="flex items-center gap-1.5">
             <span className="w-3 h-0.5 inline-block bg-cyan-600 dark:bg-cyan-400"></span>
             <span className="tracking-widest uppercase">Latest scan checks</span>
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full inline-block border-2 border-slate-400 dark:border-slate-500"></span>
+            <span className="w-2 h-2 rounded-full inline-block border-2 border-slate-500 dark:border-slate-400"></span>
             <span className="tracking-widest uppercase">Unknown</span>
           </span>
         </div>

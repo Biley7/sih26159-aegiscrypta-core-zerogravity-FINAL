@@ -37,11 +37,11 @@ export const CryptoSessionsCard: React.FC<CryptoSessionsCardProps> = ({
   const hasPosture = cryptoPosture !== null;
 
   return (
-    <div className={`${className} bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-md p-5 transition-colors hover:border-cyan-500/50 flex flex-col justify-between`}>
+    <div className={`${className} bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800/80 rounded-md p-5 transition-colors hover:border-cyan-500/50 flex flex-col justify-between`}>
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div>
-          <span className="text-[11px] font-semibold tracking-widest text-slate-500 dark:text-slate-400 uppercase block">
+          <span className="uppercase tracking-[0.2em] text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400 block">
             Audit Certification · Real-Time
           </span>
           <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100 tracking-tight mt-1">
@@ -51,7 +51,7 @@ export const CryptoSessionsCard: React.FC<CryptoSessionsCardProps> = ({
         <button
           type="button"
           onClick={onExplore}
-          className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+          className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors"
           title="Expand Session Details"
         >
           <ArrowUpRight size={14} />
@@ -76,7 +76,7 @@ export const CryptoSessionsCard: React.FC<CryptoSessionsCardProps> = ({
                 cx="45"
                 cy="45"
                 r={radius}
-                className="stroke-cyan-500 dark:stroke-[#00f0ff]"
+                className="stroke-cyan-600 dark:stroke-cyan-400"
                 strokeWidth="6"
                 strokeDasharray={circumference}
                 strokeDashoffset={strokeDashoffset}
@@ -88,7 +88,7 @@ export const CryptoSessionsCard: React.FC<CryptoSessionsCardProps> = ({
           </svg>
 
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-            <span className={`text-xl font-bold font-mono ${hasScore ? 'text-slate-800 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500'}`}>
+            <span className={`text-xl font-bold font-mono tracking-tight ${hasScore ? 'text-slate-900 dark:text-slate-100' : 'text-slate-500 dark:text-slate-400'}`}>
               {hasScore ? `${gaugePct}%` : 'N/A'}
             </span>
             <span className="text-[9px] font-mono text-cyan-700 dark:text-cyan-400 tracking-wider uppercase">
@@ -101,13 +101,13 @@ export const CryptoSessionsCard: React.FC<CryptoSessionsCardProps> = ({
         <div className="flex-1 space-y-3 min-w-0">
           <div>
             <div className="flex items-baseline justify-between text-xs mb-1.5">
-              <span className="text-slate-500 dark:text-slate-400 text-[11px] tracking-wide uppercase">Checks Executed</span>
+              <span className="font-medium text-slate-700 dark:text-slate-300 text-[11px] tracking-wide uppercase">Checks Executed</span>
               <span className="text-[10px] font-mono text-cyan-700 dark:text-cyan-400 tracking-wider">
                 {checkList.length > 0 ? `${passCount} passed` : 'No checks reported'}
               </span>
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-base font-bold font-mono text-cyan-700 dark:text-cyan-400 tracking-wider">
+              <span className="text-base font-bold font-mono text-cyan-700 dark:text-cyan-400 tracking-tight">
                 {checkList.length}
               </span>
               <div className="flex-1 h-1.5 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
@@ -121,13 +121,13 @@ export const CryptoSessionsCard: React.FC<CryptoSessionsCardProps> = ({
 
           <div>
             <div className="flex items-baseline justify-between text-xs mb-1.5">
-              <span className="text-slate-500 dark:text-slate-400 text-[11px] tracking-wide uppercase">Protocols Audited</span>
+              <span className="font-medium text-slate-700 dark:text-slate-300 text-[11px] tracking-wide uppercase">Protocols Audited</span>
               <span className="text-[10px] font-mono text-emerald-700 dark:text-emerald-400 tracking-wider">
                 {protocols.length > 0 ? `${negotiatedCount} negotiated` : 'No probes reported'}
               </span>
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-base font-bold font-mono text-emerald-700 dark:text-emerald-400 tracking-wider">
+              <span className="text-base font-bold font-mono text-emerald-700 dark:text-emerald-400 tracking-tight">
                 {protocols.length}
               </span>
               <div className="flex-1 h-1.5 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">

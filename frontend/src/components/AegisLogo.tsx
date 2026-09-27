@@ -70,11 +70,11 @@ export const AegisLogo: React.FC<AegisLogoProps> = ({
       {/* Brand Text */}
       {showText && (
         <div className="flex flex-col leading-none">
-          <span className="text-xl font-bold tracking-tight text-white font-sans flex items-center gap-1.5">
+          <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white font-sans flex items-center gap-1.5">
             Aegiscripta
             <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse inline-block"></span>
           </span>
-          <span className="text-[10px] tracking-wider text-cyan-400/80 font-mono font-medium uppercase mt-0.5">
+          <span className="text-[10px] tracking-[0.2em] text-cyan-700 dark:text-cyan-400/80 font-mono font-bold uppercase mt-0.5">
             CYBER POSTURE OPS
           </span>
         </div>
