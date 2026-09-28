@@ -192,5 +192,10 @@ def evaluate_domain_crypto_posture(
         weak_ciphers_found=weak_ciphers_found,
         deprecated_tls_found=deprecated_tls_found,
         certificate_issues_found=certificate_issues_found,
-        prioritized_findings=unique_findings
+        prioritized_findings=unique_findings,
+        # PQC indicators are only evaluated when a completed handshake supplied
+        # cipher/key-exchange telemetry to classify.
+        pqc_indicators_evaluated=any(
+            a.tls_handshake and a.tls_handshake.success and a.tls_handshake.cipher for a in audits
+        )
     )

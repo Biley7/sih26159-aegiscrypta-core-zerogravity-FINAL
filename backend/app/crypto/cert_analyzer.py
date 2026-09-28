@@ -5,30 +5,94 @@ from cryptography.hazmat.primitives.asymmetric import rsa, ec, dsa, ed25519, ed4
 from cryptography.x509.oid import NameOID, ExtensionOID
 import fnmatch
 import hashlib
+import logging
+import ssl
 
 from app.models import CertificateInfo, SecurityFinding, FindingSeverity
 
+_logger = logging.getLogger("aegiscrypta.cert")
+
 _TRUST_STORE = None
+_TRUST_STORE_ERROR: Optional[str] = None
+_TRUST_STORE_SOURCE: Optional[str] = None
+
+
+def _load_root_certificates(cafile: Optional[str] = None) -> List[x509.Certificate]:
+    """Loads every root CA the runtime exposes, optionally from an explicit bundle."""
+    ctx = ssl.create_default_context(cafile=cafile)
+    roots: List[x509.Certificate] = []
+    for der in ctx.get_ca_certs(binary_form=True):
+        try:
+            roots.append(x509.load_der_x509_certificate(der))
+        except Exception:
+            continue
+    return roots
+
 
 def _get_trust_store():
-    """Lazily loads default trusted root CAs from Python system trust store."""
-    global _TRUST_STORE
-    if _TRUST_STORE is None:
+    """
+    Lazily loads the root CA trust store used for chain validation.
+
+    The interpreter's own trust store is tried first. python.org framework builds
+    and slim container images frequently ship **zero** root certificates (the
+    ``certificates`` install step is skipped), which previously left every scan
+    reporting an untrusted chain. When the platform store yields no usable roots
+    we fall back to the CA bundle shipped with ``certifi``.
+
+    A failure is cached alongside a diagnostic reason so the fallback chain is
+    walked at most once per process.
+    """
+    global _TRUST_STORE, _TRUST_STORE_ERROR, _TRUST_STORE_SOURCE
+    if _TRUST_STORE is not None or _TRUST_STORE_ERROR is not None:
+        return _TRUST_STORE
+
+    from cryptography.x509.verification import Store
+
+    sources: List[Tuple[str, Optional[str]]] = [("system trust store", None)]
+    try:
+        import certifi
+        sources.append(("certifi CA bundle", certifi.where()))
+    except Exception as exc:
+        _logger.warning(
+            "certifi is not importable (%s); no fallback CA bundle is available for chain validation.",
+            exc,
+        )
+
+    for label, cafile in sources:
         try:
-            import ssl
-            from cryptography.x509.verification import Store
-            ctx = ssl.create_default_context()
-            ca_ders = ctx.get_ca_certs(binary_form=True)
-            ca_certs = []
-            for d in ca_ders:
-                try:
-                    ca_certs.append(x509.load_der_x509_certificate(d))
-                except Exception:
-                    pass
-            _TRUST_STORE = Store(ca_certs)
-        except Exception:
-            _TRUST_STORE = None
-    return _TRUST_STORE
+            roots = _load_root_certificates(cafile)
+        except Exception as exc:
+            _logger.debug("Could not read the %s: %s", label, exc)
+            continue
+
+        if not roots:
+            _logger.debug("The %s contained no root CA certificates.", label)
+            continue
+
+        try:
+            _TRUST_STORE = Store(roots)
+        except Exception as exc:
+            _logger.debug("Could not build a trust store from the %s: %s", label, exc)
+            continue
+
+        _TRUST_STORE_SOURCE = label
+        _logger.info(
+            "Certificate chain validation loaded %d root CAs from the %s.", len(roots), label
+        )
+        return _TRUST_STORE
+
+    _TRUST_STORE_ERROR = (
+        "no usable root CA bundle was found (the system trust store is empty and "
+        "certifi is unavailable)"
+    )
+    _logger.error("Certificate chain validation is unavailable: %s.", _TRUST_STORE_ERROR)
+    return None
+
+
+def trust_store_source() -> Optional[str]:
+    """Returns the label of the CA bundle in use, or None when validation is unavailable."""
+    _get_trust_store()
+    return _TRUST_STORE_SOURCE
 
 
 def verify_certificate_chain(
@@ -42,7 +106,11 @@ def verify_certificate_chain(
     """
     store = _get_trust_store()
     if store is None:
-        return False, "System trust store is unavailable; certificate chain could not be validated."
+        return (
+            False,
+            "Certificate chain could not be validated: no trusted root CA bundle is "
+            "available to this deployment.",
+        )
 
     try:
         from cryptography.x509.verification import DNSName, PolicyBuilder

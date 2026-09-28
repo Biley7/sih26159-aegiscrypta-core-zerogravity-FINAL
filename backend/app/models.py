@@ -95,6 +95,14 @@ class CryptographicPosture(BaseModel):
     deprecated_tls_found: bool = False
     certificate_issues_found: bool = False
     prioritized_findings: List[SecurityFinding] = Field(default_factory=list)
+    pqc_indicators_evaluated: bool = Field(
+        False,
+        description=(
+            "True only when a completed handshake supplied cipher/key-exchange "
+            "telemetry that was classified for post-quantum (hybrid KEM) indicators. "
+            "False means no PQC compliance claim can be made for this scan."
+        ),
+    )
 
 
 class AiRiskScore(BaseModel):

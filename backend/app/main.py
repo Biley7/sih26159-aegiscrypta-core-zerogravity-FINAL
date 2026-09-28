@@ -71,16 +71,60 @@ async def require_api_key(request: Request, call_next):
 
     return await call_next(request)
 
-# Enable CORS for frontend clients (Permissive for local and cloud runtimes)
+_logger = logging.getLogger("aegiscrypta")
+
+# Enable CORS for frontend clients.
+# Set CORS_ORIGINS to a comma-separated allowlist of the deployed origins, e.g.
+#   CORS_ORIGINS=https://aegiscrypta.example.com,https://admin.example.com
+# CORS_ALLOWED_ORIGINS is still honoured as a legacy alias.
+_cors_origins_raw = os.getenv("CORS_ORIGINS", "").strip()
+_cors_var_used = "CORS_ORIGINS"
+if not _cors_origins_raw:
+    _cors_origins_raw = os.getenv("CORS_ALLOWED_ORIGINS", "").strip()
+    if _cors_origins_raw:
+        _cors_var_used = "CORS_ALLOWED_ORIGINS"
+
+# Zero-config origins for local development. A production deployment MUST set
+# CORS_ORIGINS explicitly.
+_DEV_CORS_ORIGINS = [
+    "http://localhost:5173",
+    "http://localhost:8000",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:8000",
+    "http://localhost:4173",
+    "http://127.0.0.1:4173",
+]
+
+if _cors_origins_raw:
+    _cors_origins = [o.strip() for o in _cors_origins_raw.split(",") if o.strip()]
+else:
+    _cors_origins = list(_DEV_CORS_ORIGINS)
+
+# VULN-07: "*" combined with allow_credentials=True lets any origin drive the API
+# with ambient browser credentials. Authentication here is an explicit header
+# (X-API-Key), so credentialed CORS is never required — drop it for wildcards.
+_cors_wildcard = "*" in _cors_origins
+_allow_credentials = not _cors_wildcard
+
+if _cors_wildcard:
+    _logger.warning(
+        "%s is '*': every origin may call this API from a browser, so credentialed "
+        "CORS is disabled. Set an explicit comma-separated allowlist before deploying.",
+        _cors_var_used,
+    )
+elif not _cors_origins_raw:
+    _logger.warning(
+        "CORS_ORIGINS is not set; defaulting to local development origins %s.",
+        _cors_origins,
+    )
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=_cors_origins,
+    allow_credentials=_allow_credentials,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-_logger = logging.getLogger("aegiscrypta")
 
 
 @app.exception_handler(Exception)
@@ -144,9 +188,19 @@ async def global_exception_handler(request: Request, exc: Exception):
 #         # Gracefully proceed with scan even if local DNS lookup times out
 #         return True
 
+# Client-facing text for a failed domain resolution. The specific cause (NXDOMAIN,
+# no published records, resolver error) is written to the server log only, so no
+# raw resolver detail is ever serialised into an HTTP response body.
+_DOMAIN_RESOLUTION_ERROR = "Domain resolution failed or unreachable."
+
+
 def verify_domain_resolvable(domain: str, timeout: float = 3.0) -> bool:
     """
     Require at least one public DNS answer before starting an active scan.
+
+    Raises HTTPException(400) with a generic, sanitised detail when the domain
+    cannot be resolved. The diagnostic reason is logged server-side, never
+    returned to the caller.
     """
     resolver = get_dns_resolver(timeout=timeout)
     resolver.nameservers = ['8.8.8.8', '1.1.1.1', '8.8.4.4']
@@ -157,10 +211,14 @@ def verify_domain_resolvable(domain: str, timeout: float = 3.0) -> bool:
             resolver.resolve(domain, record_type)
             return True
         except dns.resolver.NXDOMAIN:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Domain '{domain}' does not exist in public DNS (NXDOMAIN).",
+            # Logged at WARNING so the diagnostic survives even when the application
+            # has no logging configuration (this app does not call basicConfig, and
+            # the root logger defaults to WARNING, which would drop an INFO line).
+            _logger.warning(
+                "Scan rejected for %s: NXDOMAIN (the domain does not exist in public DNS).",
+                domain,
             )
+            raise HTTPException(status_code=400, detail=_DOMAIN_RESOLUTION_ERROR)
         except dns.resolver.NoAnswer:
             continue
         except dns.exception.DNSException as exc:
@@ -168,15 +226,16 @@ def verify_domain_resolvable(domain: str, timeout: float = 3.0) -> bool:
             continue
 
     if last_error is not None:
+        _logger.warning("Scan rejected for %s: DNS resolution error: %s", domain, last_error)
         raise HTTPException(
             status_code=503,
             detail="Public DNS resolution failed; retry the scan when DNS is available.",
         )
 
-    raise HTTPException(
-        status_code=400,
-        detail=f"Domain '{domain}' has no resolvable A, AAAA, MX, or SOA records.",
+    _logger.warning(
+        "Scan rejected for %s: no A, AAAA, MX, or SOA records are published.", domain
     )
+    raise HTTPException(status_code=400, detail=_DOMAIN_RESOLUTION_ERROR)
 
 def execute_security_scan(domain: str, is_customer_facing: bool = False) -> Tuple[int, List[CheckResult], Optional[CryptographicPosture], List[SecurityFinding], AiRiskScore, TlsAnomalyDetectionResult, CvssMetrics, RemediationPlaybook, str, Optional[str]]:
     """
@@ -194,8 +253,10 @@ def execute_security_scan(domain: str, is_customer_facing: bool = False) -> Tupl
         # Extract banner from crypto_posture for software vulnerability check
         if crypto_posture and crypto_posture.protocols_audited:
             banner = crypto_posture.protocols_audited[0].banner if crypto_posture.protocols_audited[0].banner else None
-    except Exception as e:
-        # Graceful fallback to legacy checks if socket error occurs
+    except Exception:
+        # Graceful fallback to legacy checks if socket error occurs. The raw
+        # exception is logged server-side only — never serialised into a finding.
+        _logger.exception("Active domain scan degraded for %s; falling back to DNS checks.", domain)
         checks = [check_spf(domain), check_dmarc(domain), check_dkim(domain), check_mx_starttls(domain)]
         crypto_posture = None
         prioritized_findings = [
@@ -203,8 +264,8 @@ def execute_security_scan(domain: str, is_customer_facing: bool = False) -> Tupl
                 title="Active Scan Degraded",
                 severity=FindingSeverity.LOW,
                 category="System",
-                description=f"Active scan fallback triggered: {str(e)}",
-                recommendation="Verify network connectivity and domain reachability."
+                description="The active TLS/SMTP probe could not complete for this domain, so only DNS authentication checks were evaluated.",
+                recommendation="Verify network connectivity and domain reachability, then re-run the scan."
             )
         ]
 
@@ -263,10 +324,18 @@ def scan_domain(payload: ScanRequest):
     try:
         verify_domain_resolvable(domain)
         score, checks, crypto_posture, prioritized_findings, ai_risk, anomaly, cvss, playbook, scanned_at, banner = execute_security_scan(domain, is_customer_facing)
-    except Exception as e:
+    except HTTPException:
+        # Validation failures (400 unreachable/NXDOMAIN domain, 503 DNS unavailable)
+        # propagate with their own status code. Swallowing them here previously turned
+        # every resolution failure into a 200 whose user-visible check details leaked
+        # the raw "400: ..." exception string.
+        raise
+    except Exception:
+        _logger.exception("Automated probe failed unexpectedly for %s.", domain)
+        degraded_detail = "Automated probe could not complete for this domain."
         checks = [
-            CheckResult(name="SPF", status=CheckStatus.FAIL, details={"record_value": "Resolution failed", "message": str(e)}),
-            CheckResult(name="DMARC", status=CheckStatus.FAIL, details={"dmarc_present": False, "policy": "none", "message": str(e)}),
+            CheckResult(name="SPF", status=CheckStatus.FAIL, details={"record_value": "Resolution failed", "message": degraded_detail}),
+            CheckResult(name="DMARC", status=CheckStatus.FAIL, details={"dmarc_present": False, "policy": "none", "message": degraded_detail}),
             CheckResult(name="DKIM", status=CheckStatus.WARN, details={"message": "Unverified"}),
             CheckResult(name="MTA-STS", status=CheckStatus.WARN, details={"message": "Unverified"}),
             CheckResult(name="TLS-RPT", status=CheckStatus.WARN, details={"message": "Unverified"}),
@@ -277,7 +346,7 @@ def scan_domain(payload: ScanRequest):
                 title="Active Scan Degraded",
                 severity=FindingSeverity.LOW,
                 category="System",
-                description=f"Automated probe encountered an issue: {str(e)}",
+                description="The automated probe encountered an unexpected error and could not assess this domain.",
                 recommendation="Verify zone nameserver responsiveness and domain format."
             )
         ]

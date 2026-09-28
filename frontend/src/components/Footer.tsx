@@ -18,7 +18,7 @@ interface FooterProps {
 
 type ModalType = 'nist' | 'mta-sts' | 'tls-rpt' | 'pqc' | null;
 
-export const Footer: React.FC<FooterProps> = ({ onExportJson, apiBaseUrl = 'http://localhost:8000' }) => {
+export const Footer: React.FC<FooterProps> = ({ onExportJson, apiBaseUrl = '' }) => {
   const docsUrl = `${apiBaseUrl.replace(/\/$/, '')}/docs`;
   const [activeModal, setActiveModal] = useState<ModalType>(null);
 

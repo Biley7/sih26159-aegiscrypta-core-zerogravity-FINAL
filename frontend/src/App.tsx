@@ -23,7 +23,8 @@ import {
   fetchPdfReport,
   fetchHtmlReport,
   scanPcap,
-  setApiBaseUrl
+  setApiBaseUrl,
+  hasApiKey
 } from './api';
 
 // Component imports
@@ -48,11 +49,12 @@ import { Footer } from './components/Footer';
 export function App() {
   const [activeTab, setActiveTab] = useState<NavItemKey>('overview');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('gmail.com');
+  const [searchQuery, setSearchQuery] = useState('');
   const [pcapData, setPcapData] = useState<PcapAnalysisResponse | null>(null);
   const [isPcapLoading, setIsPcapLoading] = useState(false);
-  const [currentDomain, setCurrentDomain] = useState('gmail.com');
+  const [currentDomain, setCurrentDomain] = useState('');
   const [scanState, setScanState] = useState<ScanState>('IDLE');
+  const [isCustomerFacing, setIsCustomerFacing] = useState(true);
   
   // Real scan response from backend (null if initial or error)
   const [scanData, setScanData] = useState<ScanResponse | null>(null);
@@ -92,7 +94,9 @@ export function App() {
       theme: 'dark',
       density: 'normal',
       aiDetail: 'verbose',
-      apiBaseUrl: 'http://localhost:8000'
+      // Empty means "same origin": the dev server and the production nginx
+      // config both reverse-proxy /api to the backend.
+      apiBaseUrl: ''
     };
   });
 
@@ -140,7 +144,7 @@ export function App() {
     addLog('DNS', `Querying authoritative DNS zone (MX, SPF, DMARC, MTA-STS, TLSA) for ${target}...`);
 
     try {
-      const res = await scanDomain(target);
+      const res = await scanDomain(target, isCustomerFacing);
       const data = res.data;
       setScanData(data);
       setScore(data.score);
@@ -173,21 +177,46 @@ export function App() {
     } catch (err: unknown) {
       setScanState('ERROR');
 
+      let correlationSuffix = '';
+      let userMessage = 'Scan failed. Check terminal logs for diagnostic details.';
       if (axios.isAxiosError(err)) {
         const status = err.response?.status;
+        const correlationId = err.response?.data?.correlation_id;
         const diagnostic = err.response?.data?.detail ?? err.message ?? 'Unknown scan error';
         console.error('[AegisCrypta] Scan request failed', { domain: target, status, diagnostic });
         setBackendOnline(Boolean(err.response));
+        if (correlationId) {
+          correlationSuffix = ` (ref: ${correlationId})`;
+        }
+
+        // Map the status code to a sanitised, actionable message. The raw backend
+        // payload is never rendered — it stays in the console for diagnostics.
+        if (!err.response) {
+          userMessage = 'Backend unreachable. Confirm the AegisCrypta daemon is running and the API base URL in Settings is correct.';
+        } else if (status === 401) {
+          userMessage = 'API Key required. Please configure your AEGIS_API_KEY in Settings.';
+          setIsSettingsOpen(true);
+        } else if (status === 503) {
+          userMessage = 'This API has no authentication key configured (AEGIS_API_KEY). Contact your administrator.';
+        } else if (status === 400) {
+          userMessage = 'Scan rejected: the target domain could not be resolved. Check the domain and DNS availability.';
+        } else if (status === 422) {
+          userMessage = 'Scan rejected: check the domain format and try again.';
+        } else if (typeof status === 'number' && status >= 500) {
+          userMessage = 'The scan engine hit an internal error.';
+        }
       } else {
         const diagnostic = err instanceof Error ? err.message : 'Unknown scan error';
         console.error('[AegisCrypta] Scan failed', { domain: target, diagnostic });
         setBackendOnline(false);
+        userMessage = 'Backend unreachable. Confirm the AegisCrypta daemon is running.';
       }
 
-      addLog('ERROR', `Scan failed for ${target}. Diagnostic details were written to the terminal logs.`);
-      setToastMessage('Scan failed. Check terminal logs for diagnostic details.');
+      addLog('ERROR', `Scan failed for ${target}.${correlationSuffix} ${userMessage}`);
+      setToastType('rose');
+      setToastMessage(`${userMessage}${correlationSuffix}`);
     }
-  }, [addLog]);
+  }, [addLog, isCustomerFacing]);
 
   // Initial Health Probe & First Scan on Mount
   const handleCheckHealth = useCallback(async () => {
@@ -198,8 +227,16 @@ export function App() {
 
     if (health.online) {
       addLog('SYSTEM', `Daemon connected: GET ${health.endpoint} → ${health.detail}. Live probing ready.`);
-      // Auto-run real scan for initial domain
-      handleTriggerScan('gmail.com');
+      if (hasApiKey()) {
+        // Auto-run real scan for initial domain
+        handleTriggerScan('gmail.com');
+      } else {
+        // Every /api/* route requires the key, so an unattended auto-scan would just
+        // fail with a 401. Tell the operator what to do instead.
+        addLog('AUTH', 'No API key configured for this session. Enter your AEGIS_API_KEY in Settings to enable scans.');
+        setToastType('amber');
+        setToastMessage('API Key required. Please configure your AEGIS_API_KEY in Settings.');
+      }
     } else {
       addLog('ERROR', `Daemon unreachable: GET ${health.endpoint} → ${health.detail}.`);
     }
@@ -480,7 +517,7 @@ export function App() {
 
   return (
     <div
-      className="flex h-screen w-screen overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans selection:bg-blue-500/30 selection:text-blue-200 selection:dark:bg-blue-500/20"
+      className="flex h-screen w-screen overflow-hidden overflow-x-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans selection:bg-blue-500/30 selection:text-blue-200 selection:dark:bg-blue-500/20"
       data-theme={settings.theme}
     >
       {/* 1. LEFT SIDEBAR: Pinned left, full height, strictly separated from terminal */}
@@ -508,7 +545,13 @@ export function App() {
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           onTriggerScan={handleTriggerScan}
+          onEmptySearch={() => {
+            setToastType('amber');
+            setToastMessage('Enter a target domain to run an audit.');
+          }}
           isScanning={scanState === 'SCANNING'}
+          isCustomerFacing={isCustomerFacing}
+          onToggleCustomerFacing={() => setIsCustomerFacing(prev => !prev)}
           backendOnline={backendOnline}
         />
 

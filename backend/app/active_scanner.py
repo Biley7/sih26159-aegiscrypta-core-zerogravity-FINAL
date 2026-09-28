@@ -537,6 +537,11 @@ def run_active_domain_scan(domain: str) -> Tuple[List[CheckResult], Cryptographi
     has_weak_cipher = any(a.tls_handshake and a.tls_handshake.cipher and a.tls_handshake.cipher.is_weak for a in audits)
     has_dep_tls = any(a.tls_handshake and a.tls_handshake.negotiated_version in ["SSLv2", "SSLv3", "TLSv1", "TLSv1.0", "TLSv1.1"] for a in audits)
     has_cert_issue = any(a.tls_handshake and a.tls_handshake.certificate and (a.tls_handshake.certificate.is_expired or a.tls_handshake.certificate.is_self_signed) for a in audits)
+    # PQC indicators can only be claimed when a completed handshake actually supplied
+    # cipher/key-exchange telemetry for classification.
+    pqc_evaluated = any(
+        a.tls_handshake and a.tls_handshake.success and a.tls_handshake.cipher for a in audits
+    )
 
     crypto_posture = CryptographicPosture(
         crypto_score=100,
@@ -546,7 +551,8 @@ def run_active_domain_scan(domain: str) -> Tuple[List[CheckResult], Cryptographi
         weak_ciphers_found=has_weak_cipher,
         deprecated_tls_found=has_dep_tls,
         certificate_issues_found=has_cert_issue,
-        prioritized_findings=probe_findings
+        prioritized_findings=probe_findings,
+        pqc_indicators_evaluated=pqc_evaluated
     )
 
     # Calculate posture score deterministically using real cryptographic findings

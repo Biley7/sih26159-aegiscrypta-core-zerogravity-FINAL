@@ -1,0 +1,39 @@
+# AegisCrypta deployment topology.
+#
+# The frontend container terminates HTTP and reverse-proxies /api to the API
+# container, so the browser only ever talks to one origin and the API port is
+# never published. Put a TLS-terminating proxy or load balancer in front of
+# aegiscrypta-web for production traffic.
+#
+# Required: export AEGIS_API_KEY before running `docker compose up`.
+#   AEGIS_API_KEY="$(openssl rand -hex 32)" docker compose up --build -d
+
+services:
+  aegiscrypta-api:
+    build:
+      context: .
+      target: backend
+    environment:
+      # Fail fast with a clear message rather than silently starting an open API.
+      AEGIS_API_KEY: ${AEGIS_API_KEY:?AEGIS_API_KEY must be set (e.g. export AEGIS_API_KEY=$(openssl rand -hex 32))}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      # Requests arrive through the frontend proxy, so no cross-origin access is needed.
+      CORS_ORIGINS: ${CORS_ORIGINS:-*}
+    expose:
+      - "8000"
+    restart: unless-stopped
+
+  aegiscrypta-web:
+    build:
+      context: .
+      target: frontend
+      args:
+        # Empty keeps the bundle same-origin and routed through the proxy below.
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-}
+    environment:
+      AEGIS_API_UPSTREAM: aegiscrypta-api:8000
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    depends_on:
+      - aegiscrypta-api
+    restart: unless-stopped

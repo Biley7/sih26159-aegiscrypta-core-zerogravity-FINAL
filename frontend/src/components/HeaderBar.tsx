@@ -17,7 +17,10 @@ interface HeaderBarProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
   onTriggerScan: (target: string) => void;
+  onEmptySearch?: () => void;
   isScanning?: boolean;
+  isCustomerFacing?: boolean;
+  onToggleCustomerFacing?: () => void;
   backendOnline?: boolean | null;
 }
 
@@ -27,20 +30,26 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   searchQuery,
   onSearchChange,
   onTriggerScan,
+  onEmptySearch,
   isScanning = false,
+  isCustomerFacing = true,
+  onToggleCustomerFacing,
   backendOnline = null
 }) => {
   const [isFocused, setIsFocused] = useState(false);
 
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (searchQuery.trim() && !isScanning) {
-      onTriggerScan(searchQuery.trim());
+    const trimmed = searchQuery.trim();
+    if (trimmed && !isScanning) {
+      onTriggerScan(trimmed);
+    } else if (!trimmed && onEmptySearch) {
+      onEmptySearch();
     }
   };
 
   return (
-    <header className="h-16 px-4 md:px-6 bg-white dark:bg-slate-950/90 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-4 shrink-0 z-20">
+    <header className="py-3.5 px-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 flex items-center justify-between gap-4 shrink-0 z-20">
       {/* Left: Mobile Menu Toggle & Search Bar with Run Audit CTA */}
       <div className="flex items-center gap-3 flex-1 max-w-2xl">
         <button
@@ -68,8 +77,8 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               onChange={(e) => onSearchChange(e.target.value)}
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
-              placeholder="Target domain (e.g. gmail.com, defense.gov.in)..."
-              className="bg-transparent text-xs sm:text-sm font-mono tracking-tight text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-500 focus:outline-none w-full"
+              placeholder="e.g., enterprise-target.com or gmail.com"
+              className="bg-transparent text-xs sm:text-sm font-mono tracking-tight text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 font-mono text-sm focus:outline-none w-full"
               disabled={isScanning}
             />
             {isScanning ? (
@@ -113,6 +122,21 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             {backendOnline === true ? 'ONLINE' : backendOnline === false ? 'OFFLINE' : 'CHECKING'}
           </span>
         </div>
+
+        {/* Asset Criticality Toggle: Customer-Facing vs Internal */}
+        <button
+          type="button"
+          onClick={onToggleCustomerFacing}
+          className={`hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-mono font-semibold tracking-wider transition-colors ${
+            isCustomerFacing
+              ? 'bg-amber-500/10 border-amber-500/40 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20'
+              : 'bg-slate-100 dark:bg-slate-800/60 border-slate-300 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-slate-400'
+          }`}
+          title={isCustomerFacing ? 'Asset: Customer-Facing (higher exploitation likelihood)' : 'Asset: Internal (lower exploitation likelihood)'}
+        >
+          <ShieldCheck size={10} />
+          {isCustomerFacing ? 'EXT' : 'INT'}
+        </button>
 
         {/* Primary CTA: "Security Report" */}
         <button

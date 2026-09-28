@@ -87,12 +87,12 @@ export const EmailCredentialsCard: React.FC<EmailCredentialsCardProps> = ({
   const line1Path = `M ${line1Points.map((p) => `${p.x} ${p.y}`).join(' L ')}`;
 
   return (
-    <div className={`${className} bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800/80 rounded-md p-5 transition-colors hover:border-cyan-500/50 flex flex-col justify-between`}>
+    <div className={`${className} bg-white dark:bg-slate-900/90 border border-slate-200/90 dark:border-slate-800/80 rounded-lg p-5 transition-colors hover:border-cyan-500/50 flex flex-col justify-between`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <MailCheck size={15} className="text-cyan-600 dark:text-cyan-400" />
-          <span className="uppercase tracking-[0.2em] text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400">
+          <span className="text-[11px] uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">
             Email Auth · TLS Credentials
           </span>
         </div>

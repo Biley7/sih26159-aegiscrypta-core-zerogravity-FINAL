@@ -33,11 +33,11 @@ export const AuditVolumeCard: React.FC<AuditVolumeCardProps> = ({
         : { label: 'All Checks Healthy', className: 'text-emerald-700 dark:text-emerald-400' };
 
   return (
-    <div className={`${className} bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800/80 rounded-md p-5 transition-colors hover:border-cyan-500/50 flex flex-col justify-between`}>
+    <div className={`${className} bg-white dark:bg-slate-900/90 border border-slate-200/90 dark:border-slate-800/80 rounded-lg p-5 transition-colors hover:border-cyan-500/50 flex flex-col justify-between`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <span className="uppercase tracking-[0.2em] text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400">
+          <span className="text-[11px] uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">
             Audit Volume · Core Inquiries
           </span>
           <span className={`text-[10px] font-mono tracking-widest uppercase ${hasChecks ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-500'}`}>

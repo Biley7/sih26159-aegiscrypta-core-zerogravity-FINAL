@@ -77,6 +77,14 @@ export const RemediationEngine: React.FC<RemediationEngineProps> = ({
   const findings: SecurityFinding[] = data.prioritized_findings || [];
   const cvssMetrics = data.cvss_metrics;
 
+  // Real leaf-certificate SHA-256 for the DANE TLSA template. TLSA matching type 1
+  // (SHA-256) expects the full lowercase hex digest with no separators, so the
+  // colon-separated display format is normalised when the scan captured a certificate.
+  const certFingerprint = data.crypto_posture?.protocols_audited?.[0]?.tls_handshake?.certificate?.sha256_fingerprint;
+  const tlsaFingerprint = certFingerprint
+    ? certFingerprint.replace(/:/g, '').toLowerCase()
+    : '<INSERT_CERTIFICATE_SHA256>';
+
   // Filter findings by severity
   const filteredFindings = findings.filter((f) => {
     if (selectedSeverity === 'ALL') return true;
@@ -163,7 +171,7 @@ export const RemediationEngine: React.FC<RemediationEngineProps> = ({
         : isSpf
         ? `; Authoritative Hardened SPF Record (RFC 7208)\n${domain}.  3600  IN  TXT  "v=spf1 mx -all"`
         : isDane
-        ? `; DANE TLSA Record for MX Port 25 (RFC 6698 / RFC 7672)\n; IMPORTANT: Replace [TLSA_FINGERPRINT_PLACEHOLDER] with your actual certificate SHA-256 hash before publishing.\n_25._tcp.mail.${domain}.  3600  IN  TLSA  3 1 1 [TLSA_FINGERPRINT_PLACEHOLDER]`
+        ? `; DANE TLSA Record for MX Port 25 (RFC 6698 / RFC 7672)\n; ${certFingerprint ? 'SHA-256 fingerprint captured from the live MX handshake for this scan - re-verify before publishing.' : 'No certificate was captured by this scan - replace <INSERT_CERTIFICATE_SHA256> before publishing.'}\n_25._tcp.mail.${domain}.  3600  IN  TLSA  3 1 1 ${tlsaFingerprint}`
         : isCert
         ? `; ACME DNS-01 Challenge Record for TLS Certificate Renewal\n_acme-challenge.mail.${domain}.  300  IN  TXT  "verification_token_here"`
         : `; MTA-STS Discovery Policy Record (RFC 8461)\n_mta-sts.${domain}.  3600  IN  TXT  "v=STSv1; id=20260901T000000Z;"`),

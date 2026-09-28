@@ -213,10 +213,10 @@ export const KeyProtocolCard: React.FC<KeyProtocolCardProps> = ({
   const currentRows = rows[activeMode];
 
   return (
-    <div className={`${className} bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800/80 rounded-md p-5 hover:border-cyan-500/50 transition-colors flex flex-col justify-between`}>
+    <div className={`${className} bg-white dark:bg-slate-900/90 border border-slate-200/90 dark:border-slate-800/80 rounded-lg p-5 hover:border-cyan-500/50 transition-colors flex flex-col justify-between`}>
       {/* Top Bar: Mode Switcher */}
       <div className="flex items-center justify-between gap-2 mb-4">
-        <span className="uppercase tracking-[0.2em] text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400">
+        <span className="text-[11px] uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">
           Key Protocol Monitor
         </span>
 

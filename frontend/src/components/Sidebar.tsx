@@ -92,14 +92,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Mobile backdrop */}
       {isOpenMobile && (
         <div
-          className="fixed inset-0 z-40 bg-black/80 backdrop-blur-sm lg:hidden transition-opacity"
+          className="fixed inset-0 z-40 bg-slate-950/40 backdrop-blur-xs transition-opacity duration-200 lg:hidden"
           onClick={onCloseMobile}
         />
       )}
 
       {/* Pinned left flex sidebar: full height, no overlapping bottom terminal */}
       <aside
-        className={`w-64 h-full flex flex-col shrink-0 bg-white dark:bg-slate-950/95 border-r border-slate-200 dark:border-slate-800 z-30 transition-transform duration-300 ease-in-out ${
+        className={`w-72 h-full flex flex-col shrink-0 bg-white dark:bg-slate-900 shadow-2xl border-r border-slate-200 dark:border-slate-800 z-50 transition-transform duration-300 ease-in-out ${
           isOpenMobile
             ? 'fixed top-0 bottom-0 left-0 translate-x-0'
             : 'max-lg:fixed max-lg:top-0 max-lg:bottom-0 max-lg:left-0 max-lg:-translate-x-full'

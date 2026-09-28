@@ -70,11 +70,11 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
       : null);
   const chainBadge = primaryCert
     ? primaryCert.chain_valid === true
-      ? { label: 'CHAIN VALID', badgeClass: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-400' }
+      ? { label: 'CHAIN VALID', badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800/50' }
       : primaryCert.chain_valid === false
-        ? { label: 'UNTRUSTED', badgeClass: 'bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-400' }
-        : { label: 'UNVERIFIED', badgeClass: 'bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-400' }
-    : { label: 'NO DATA', badgeClass: 'bg-slate-500/10 border-slate-500/30 text-slate-500 dark:text-slate-400' };
+        ? { label: 'UNTRUSTED', badgeClass: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-800/50' }
+        : { label: 'UNVERIFIED', badgeClass: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800/50' }
+    : { label: 'NO DATA', badgeClass: 'bg-slate-50 text-slate-500 border-slate-200 dark:bg-slate-800/50 dark:text-slate-400 dark:border-slate-700/50' };
   const dkimSelector = typeof dkimCheck?.details?.selector === 'string' ? dkimCheck.details.selector : null;
   const dkimKeySize = typeof dkimCheck?.details?.key_size === 'number' ? dkimCheck.details.key_size : null;
   const dkimDetail = dkimCheck
@@ -84,13 +84,13 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
     : 'No Credential Data';
   const dkimBadge = dkimCheck
     ? dkimCheck.status === 'pass'
-      ? { label: 'ACTIVE', badgeClass: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-400' }
+      ? { label: 'ACTIVE', badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800/50' }
       : dkimCheck.status === 'warn'
-        ? { label: 'WARN', badgeClass: 'bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-400' }
+        ? { label: 'WARN', badgeClass: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800/50' }
         : dkimCheck.status === 'fail'
-          ? { label: 'FAIL', badgeClass: 'bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-400' }
-          : { label: 'UNKNOWN', badgeClass: 'bg-slate-500/10 border-slate-500/30 text-slate-500 dark:text-slate-300' }
-    : { label: 'NO DATA', badgeClass: 'bg-slate-500/10 border-slate-500/30 text-slate-500 dark:text-slate-400' };
+          ? { label: 'FAIL', badgeClass: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-800/50' }
+          : { label: 'UNKNOWN', badgeClass: 'bg-slate-50 text-slate-500 border-slate-200 dark:bg-slate-800/50 dark:text-slate-400 dark:border-slate-700/50' }
+    : { label: 'NO DATA', badgeClass: 'bg-slate-50 text-slate-500 border-slate-200 dark:bg-slate-800/50 dark:text-slate-400 dark:border-slate-700/50' };
 
   // Speedometer calculation:
   // Mathematical formula: angle = (risk / 100) * 180 - 90
@@ -110,49 +110,49 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
     if (linguisticClassification) {
       switch (linguisticClassification) {
         case 'EXCELLENT':
-          return { label: 'FIS: EXCELLENT POSTURE', textColor: 'text-emerald-700 dark:text-emerald-400', bgColor: 'bg-emerald-500/10 border-emerald-500/30' };
+          return { label: 'FIS: EXCELLENT POSTURE', textColor: 'text-emerald-700 dark:text-emerald-400', bgColor: 'bg-emerald-50 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-800/50' };
         case 'GOOD':
-          return { label: 'FIS: GOOD POSTURE', textColor: 'text-teal-700 dark:text-teal-400', bgColor: 'bg-teal-500/10 border-teal-500/30' };
+          return { label: 'FIS: GOOD POSTURE', textColor: 'text-teal-700 dark:text-teal-400', bgColor: 'bg-teal-50 border-teal-200 dark:bg-teal-950/30 dark:border-teal-800/50' };
         case 'ACCEPTABLE':
-          return { label: 'FIS: ACCEPTABLE POSTURE', textColor: 'text-amber-600 dark:text-amber-400', bgColor: 'bg-amber-500/10 border-amber-500/30' };
+          return { label: 'FIS: ACCEPTABLE POSTURE', textColor: 'text-amber-600 dark:text-amber-400', bgColor: 'bg-amber-50 border-amber-200 dark:bg-amber-950/30 dark:border-amber-800/50' };
         case 'POOR':
-          return { label: 'FIS: POOR POSTURE', textColor: 'text-orange-600 dark:text-orange-400', bgColor: 'bg-orange-500/10 border-orange-500/30' };
+          return { label: 'FIS: POOR POSTURE', textColor: 'text-orange-600 dark:text-orange-400', bgColor: 'bg-orange-50 border-orange-200 dark:bg-orange-950/30 dark:border-orange-800/50' };
         case 'CRITICAL':
-          return { label: 'FIS: CRITICAL RISK', textColor: 'text-rose-600 dark:text-rose-400', bgColor: 'bg-rose-500/10 border-rose-500/30' };
+          return { label: 'FIS: CRITICAL RISK', textColor: 'text-rose-600 dark:text-rose-400', bgColor: 'bg-rose-50 border-rose-200 dark:bg-rose-950/30 dark:border-rose-800/50' };
       }
     }
     if (resolvedScore === null) {
       return {
         label: 'Awaiting Scan Data',
         textColor: 'text-slate-500 dark:text-slate-400',
-        bgColor: 'bg-slate-500/10 border-slate-500/30'
+        bgColor: 'bg-slate-50 border-slate-200 dark:bg-slate-800/50 dark:border-slate-700/50'
       };
     }
     if (resolvedScore >= 80) {
       return {
         label: pqcEvaluated ? 'Low Risk · PQC Evaluated' : 'Low Risk · PQC Not Evaluated',
         textColor: 'text-emerald-700 dark:text-emerald-400',
-        bgColor: 'bg-emerald-500/10 border-emerald-500/30'
+        bgColor: 'bg-emerald-50 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-800/50'
       };
     }
     if (resolvedScore >= 60) {
       return {
         label: 'Moderate Risk · Advisory',
         textColor: 'text-amber-600 dark:text-amber-400',
-        bgColor: 'bg-amber-500/10 border-amber-500/30'
+        bgColor: 'bg-amber-50 border-amber-200 dark:bg-amber-950/30 dark:border-amber-800/50'
       };
     }
     return {
       label: 'High Risk · Critical Action',
       textColor: 'text-rose-600 dark:text-rose-400',
-      bgColor: 'bg-rose-500/10 border-rose-500/30'
+      bgColor: 'bg-rose-50 border-rose-200 dark:bg-rose-950/30 dark:border-rose-800/50'
     };
   };
 
   const badge = getClassificationBadge();
 
   return (
-    <div className={`${className} bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800/80 rounded-md p-5 hover:border-cyan-500/50 transition-colors overflow-hidden`}>
+    <div className={`${className} bg-white dark:bg-slate-900/90 border border-slate-200/90 dark:border-slate-800/80 rounded-lg p-5 hover:border-cyan-500/50 transition-colors overflow-hidden`}>
       {cvssMetrics && (
         <div className="mb-5 rounded border border-amber-500/30 bg-amber-500/10 p-3 font-mono text-xs text-amber-800 dark:text-amber-100" aria-label="CVSS vulnerability metrics">
           <div className="flex flex-wrap items-center gap-2">
@@ -299,13 +299,13 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
 
           {/* Underneath Gauge: Risk Label, Score, and Clean Badge */}
           <div className="flex flex-col items-center text-center mt-1 space-y-1.5">
-            <span className="text-[10px] font-mono font-semibold tracking-wider text-slate-500 dark:text-slate-400 uppercase">
+            <span className="text-[11px] uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">
               RISK INDEX
             </span>
 
             {/* Score & Label */}
             <div className="flex items-center gap-2">
-              <span className="text-xl font-bold font-mono text-slate-800 dark:text-slate-100">
+              <span className="text-xl font-bold font-mono font-semibold text-slate-900 dark:text-slate-100">
                 {resolvedScore !== null ? resolvedScore : 'N/A'}
                 {resolvedScore !== null && <span className="text-slate-500 dark:text-slate-400 text-sm tracking-tight">/100</span>}
               </span>

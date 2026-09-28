@@ -13,7 +13,10 @@ function getInitialBaseUrl(): string {
       // fallback
     }
   }
-  return import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+  // Same-origin by default. The Vite dev server proxies /api and /health to the
+  // local backend, and a production deployment reverse-proxies the same paths, so
+  // the built bundle never embeds a hardcoded backend host.
+  return import.meta.env.VITE_API_BASE_URL || '';
 }
 
 export const apiClient = axios.create({
@@ -35,8 +38,10 @@ apiClient.interceptors.request.use((config) => {
 });
 
 export function setApiBaseUrl(newBaseUrl: string) {
-  if (newBaseUrl && apiClient.defaults.baseURL !== newBaseUrl) {
-    apiClient.defaults.baseURL = newBaseUrl;
+  // An empty value means "same origin as this page" (dev proxy / reverse proxy).
+  const normalized = (newBaseUrl ?? '').trim().replace(/\/+$/, '');
+  if (apiClient.defaults.baseURL !== normalized) {
+    apiClient.defaults.baseURL = normalized;
   }
 }
 
@@ -47,6 +52,17 @@ export function setApiKey(apiKey: string) {
   } else {
     sessionStorage.removeItem('aegis_api_key');
   }
+}
+
+/** Returns the operator-supplied API key for this browser session, if any. */
+export function getApiKey(): string {
+  if (typeof window === 'undefined') return '';
+  return sessionStorage.getItem('aegis_api_key') ?? '';
+}
+
+/** True when a key is present for this session; no /api/* call can succeed without one. */
+export function hasApiKey(): boolean {
+  return getApiKey().trim().length > 0;
 }
 export interface BackendHealthResult {
   online: boolean;
@@ -99,8 +115,8 @@ export async function checkBackendHealth(): Promise<boolean> {
   return result.online;
 }
 
-export async function scanDomain(domain: string): Promise<{ data: ScanResponse; isFallback: boolean }> {
-  const res = await apiClient.post<ScanResponse>('/api/scan', { domain, is_customer_facing: true }, { timeout: 30000 });
+export async function scanDomain(domain: string, isCustomerFacing = true): Promise<{ data: ScanResponse; isFallback: boolean }> {
+  const res = await apiClient.post<ScanResponse>('/api/scan', { domain, is_customer_facing: isCustomerFacing }, { timeout: 30000 });
   return { data: res.data, isFallback: false };
 }
 

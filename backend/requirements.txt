@@ -1,15 +1,23 @@
-fastapi>=0.110.0
-uvicorn[standard]>=0.28.0
-dnspython>=2.6.0
-reportlab>=4.1.0
-pydantic>=2.6.0
-cryptography>=42.0.0
-scapy>=2.5.0
-numpy>=1.26.0
-scikit-learn>=1.4.0
-scikit-fuzzy>=0.4.2
-jinja2>=3.1.0
-python-multipart>=0.0.9
-python-dotenv>=1.0.0
-google-generativeai>=0.8.0
-networkx>=3.0
+# Direct runtime dependencies, pinned to the exact versions validated by the test
+# suite (Python 3.14.7). The complete resolved environment, including transitive
+# dependencies, is captured in requirements.lock.txt.
+fastapi==0.141.1
+uvicorn[standard]==0.54.0
+dnspython==2.8.0
+reportlab==5.0.1
+pydantic==2.13.5
+cryptography==50.0.1
+scapy==2.7.0
+numpy==2.5.3
+scikit-learn==1.9.1
+scikit-fuzzy==0.5.0
+jinja2==3.1.6
+python-multipart==0.0.32
+python-dotenv==1.2.3
+google-generativeai==0.8.6
+networkx==3.7
+packaging==26.3
+# Root CA bundle used for certificate chain validation when the platform trust
+# store ships no roots (python.org framework builds, slim containers).
+# See app/crypto/cert_analyzer.py::_get_trust_store.
+certifi==2026.7.22

@@ -436,6 +436,11 @@ def analyze_pcap_stream(pcap_bytes: bytes, filename: str = "capture.pcap") -> Pc
         forward_secrecy=pcap_crypto_metrics.get('forward_secrecy', False)
     )
     
+    # A packet capture cannot observe DNS authentication posture. These inputs are a
+    # deliberate worst-case assumption, not an observation, and they dominate the PED
+    # axis — which is why a capture with only moderate cryptographic findings can fuse
+    # to CRITICAL. The assumption is disclosed in summary_findings below so the
+    # classification is never attributed to the captured traffic.
     ped_score, ped_factors = compute_posture_exposure_deficit(
         spf_present=False,  # Cannot determine from PCAP alone
         dkim_present=False,  # Cannot determine from PCAP alone
@@ -457,8 +462,32 @@ def analyze_pcap_stream(pcap_bytes: bytes, filename: str = "capture.pcap") -> Pc
     c_class = classify_cipher_strength(pcap_crypto_metrics.get('cipher_name') or "")
     c_strength = 1.0 if c_class == "strong" else (0.6 if c_class == "moderate" else 0.1)
 
+    # certificate_health is asserted only when the capture actually carried an X.509
+    # certificate. A capture with no certificate material is an absence of evidence,
+    # not evidence of a broken certificate: scoring it 0.0 drove an otherwise clean
+    # TLS session to a CRITICAL fuzzy assessment. When there is no certificate the
+    # antecedent is omitted, letting the risk engine derive it from the observed
+    # cipher/TLS components instead.
+    cert_evidence_finding: Optional[SecurityFinding] = None
     days_exp = pcap_crypto_metrics.get('days_until_expiry')
-    if days_exp is None or days_exp <= 0:
+    if days_exp is None:
+        cert_hlth = None
+        cert_evidence_finding = SecurityFinding(
+            title="No X.509 Certificate Observed in Capture",
+            severity=FindingSeverity.INFO,
+            category="Certificate",
+            description=(
+                "The capture did not contain the server's certificate, so certificate "
+                "validity, expiry and chain trust could not be assessed. Certificate "
+                "health was derived from the observed TLS/cipher posture rather than "
+                "treated as a failure."
+            ),
+            recommendation=(
+                "Capture the full TLS handshake (including Certificate and CertificateVerify "
+                "messages) to enable certificate and chain validation."
+            )
+        )
+    elif days_exp <= 0:
         cert_hlth = 0.0
     elif days_exp >= 90:
         cert_hlth = 1.0
@@ -467,18 +496,20 @@ def analyze_pcap_stream(pcap_bytes: bytes, filename: str = "capture.pcap") -> Pc
     else:
         cert_hlth = round(max(0.0, days_exp / 30.0 * 0.5), 3)
 
-    sig_lower = (pcap_crypto_metrics.get('signature_algorithm') or "").lower()
-    if any(weak in sig_lower for weak in ["sha1", "md5", "sha-1"]):
-        cert_hlth = min(cert_hlth, 0.1)
-    if pcap_crypto_metrics.get('is_self_signed') or not pcap_crypto_metrics.get('chain_valid', True):
-        cert_hlth = min(cert_hlth, 0.2)
+    if cert_hlth is not None:
+        sig_lower = (pcap_crypto_metrics.get('signature_algorithm') or "").lower()
+        if any(weak in sig_lower for weak in ["sha1", "md5", "sha-1"]):
+            cert_hlth = min(cert_hlth, 0.1)
+        if pcap_crypto_metrics.get('is_self_signed') or not pcap_crypto_metrics.get('chain_valid', True):
+            cert_hlth = min(cert_hlth, 0.2)
 
     raw_crypto_metrics = {
         'tls_compliance': tls_comp,
         'cipher_strength': c_strength,
-        'certificate_health': cert_hlth,
         'pqc_readiness': 0.5
     }
+    if cert_hlth is not None:
+        raw_crypto_metrics['certificate_health'] = cert_hlth
 
     # Compute Tier 2 final fusion
     fuzzy_risk_score, linguistic_classification, antecedent_scores, risk_factors = compute_posture_risk(
@@ -490,14 +521,43 @@ def analyze_pcap_stream(pcap_bytes: bytes, filename: str = "capture.pcap") -> Pc
     # Convert fuzzy risk score (0-100, 100=highest risk) to posture score (0-100, 100=best posture)
     fuzzy_posture_score = round(max(0.0, min(100.0, 100.0 - fuzzy_risk_score)), 1)
     
+    # Disclose when certificate health could not be assessed from this capture
+    if cert_evidence_finding is not None:
+        unique_findings.append(cert_evidence_finding)
+
+    # Disclose the DNS assumption the fused score depends on
+    unique_findings.append(SecurityFinding(
+        title="Fused Score Relies on an Unverifiable DNS Assumption",
+        severity=FindingSeverity.LOW,
+        category="Risk Assessment",
+        description=(
+            "The fused posture score below combines the cryptographic findings from this "
+            "capture with a conservative assumption that SPF, DKIM, DMARC enforcement and "
+            "DNSSEC are all absent, because a passive capture cannot observe DNS "
+            "authentication posture. A POOR or CRITICAL classification can therefore be "
+            "driven by that assumption rather than by the captured traffic."
+        ),
+        recommendation=(
+            "Read the per-stream findings for what the capture actually proves, and run an "
+            "active domain scan to assess DNS authentication posture."
+        )
+    ))
+
     # Add fuzzy findings to summary
     unique_findings.append(SecurityFinding(
         title=f"PCAP Fuzzy Risk Assessment: {linguistic_classification}",
         severity=_severity_from_classification(linguistic_classification),
         category="Risk Assessment",
-        description=f"Fuzzy logic posture score: {fuzzy_posture_score:.1f}/100 (Risk: {fuzzy_risk_score:.1f}) based on cryptographic posture analysis from packet capture.",
+        description=(
+            f"Fuzzy logic posture score: {fuzzy_posture_score:.1f}/100 (Risk: {fuzzy_risk_score:.1f}) "
+            "based on cryptographic posture analysis from packet capture, including the "
+            "conservative DNS authentication assumption described above."
+        ),
         recommendation="Review individual stream findings for specific remediation steps."
     ))
+
+    # Keep the contract ordering (severity descending) after the late additions
+    unique_findings.sort(key=lambda x: severity_order.get(x.severity, 5))
 
     return PcapAnalysisResponse(
         filename=filename,

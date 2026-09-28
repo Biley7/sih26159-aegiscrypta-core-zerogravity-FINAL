@@ -381,11 +381,16 @@ def probe_protocol_tls(
         all_findings.extend(cipher_findings)
 
         # 4. Analyze X.509 Certificate
+        #    RFC 6125: the certificate must cover the identity we actually connected
+        #    to (``host``, which is also the SNI value sent on this socket) — not the
+        #    apex domain the operator typed. Comparing against the queried domain
+        #    produced false "Certificate Domain Name Mismatch" findings on any MX
+        #    whose name differs from the domain it serves mail for.
         cert_info = None
         if der_cert:
             cert_info, cert_findings = parse_x509_certificate(
                 der_cert,
-                target_domain=target_domain or host,
+                target_domain=host,
                 intermediate_certificates=_get_peer_intermediate_certificates(ssl_sock),
             )
             all_findings.extend(cert_findings)
@@ -543,9 +548,11 @@ def probe_https_sni_fallback(
 
             cert_info = None
             if der_cert:
+                # The server selects its certificate from the SNI name we sent, so
+                # that name — not the apex domain — is the identity to verify.
                 cert_info, cert_findings = parse_x509_certificate(
                     der_cert,
-                    target_domain=target_domain or host,
+                    target_domain=target_domain or target_host,
                     intermediate_certificates=_get_peer_intermediate_certificates(ssl_sock),
                 )
                 all_findings.extend(cert_findings)
