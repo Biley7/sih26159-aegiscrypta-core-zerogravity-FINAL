@@ -132,8 +132,8 @@ export const RemediationEngine: React.FC<RemediationEngineProps> = ({
   const SortIndicator = ({ forKey }: { forKey: FindingsSortKey }) => {
     if (sortKey !== forKey) return <ChevronDown size={12} className="opacity-30 inline-block ml-1" />;
     return sortDir === 'asc'
-      ? <ChevronUp size={12} className="text-cyan-400 inline-block ml-1" />
-      : <ChevronDown size={12} className="text-cyan-400 inline-block ml-1" />;
+      ? <ChevronUp size={12} className="text-cyan-600 dark:text-cyan-400 inline-block ml-1" />
+      : <ChevronDown size={12} className="text-cyan-600 dark:text-cyan-400 inline-block ml-1" />;
   };
 
   const getTargetTab = (findingTitle: string): ConfigTarget => {
@@ -260,7 +260,7 @@ echo "[AegisCrypta] Hardening completed successfully."`
 
       {/* Aggregate CVSS Metrics Banner */}
       {cvssMetrics && (
-        <div className="mb-4 p-4 rounded-md bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800/80 hover:border-cyan-500/50 transition-colors flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
+        <div className="mb-4 p-4 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 hover:border-cyan-500/50 transition-colors flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 flex items-center justify-center">
               <Target size={19} className="text-rose-600 dark:text-rose-400" />
@@ -307,7 +307,7 @@ echo "[AegisCrypta] Hardening completed successfully."`
       )}
 
       {/* Sortable Findings Table */}
-      <div className="mb-5 rounded-md overflow-hidden bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800/80 hover:border-cyan-500/50 transition-colors">
+      <div className="mb-5 rounded-md overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 hover:border-cyan-500/50 transition-colors">
         <table className="w-full text-left font-mono">
           <thead className="bg-slate-100 dark:bg-slate-950/70 text-slate-600 dark:text-slate-400 uppercase text-[10px] tracking-[0.2em] border-b border-slate-200 dark:border-slate-800">
             <tr>
@@ -315,9 +315,9 @@ echo "[AegisCrypta] Hardening completed successfully."`
                 <button
                   type="button"
                   onClick={() => toggleSort('finding')}
-                  className="flex items-center gap-1.5 hover:text-cyan-400 transition-colors font-semibold"
+                  className="flex items-center gap-1.5 hover:text-cyan-700 dark:hover:text-cyan-400 transition-colors font-semibold"
                 >
-                  <AlertTriangle size={13} className="text-amber-400" />
+                  <AlertTriangle size={13} className="text-amber-600 dark:text-amber-400" />
                   Finding / Vulnerability
                   <SortIndicator forKey="finding" />
                 </button>
@@ -326,7 +326,7 @@ echo "[AegisCrypta] Hardening completed successfully."`
                 <button
                   type="button"
                   onClick={() => toggleSort('category')}
-                  className="flex items-center gap-1.5 hover:text-cyan-400 transition-colors font-semibold"
+                  className="flex items-center gap-1.5 hover:text-cyan-700 dark:hover:text-cyan-400 transition-colors font-semibold"
                 >
                   <Code2 size={13} className="text-cyan-600 dark:text-cyan-400" />
                   Category
@@ -337,9 +337,9 @@ echo "[AegisCrypta] Hardening completed successfully."`
                 <button
                   type="button"
                   onClick={() => toggleSort('severity')}
-                  className="flex items-center gap-1.5 hover:text-cyan-400 transition-colors font-semibold"
+                  className="flex items-center gap-1.5 hover:text-cyan-700 dark:hover:text-cyan-400 transition-colors font-semibold"
                 >
-                  <ShieldAlert size={13} className="text-rose-400" />
+                  <ShieldAlert size={13} className="text-rose-600 dark:text-rose-400" />
                   Severity
                   <SortIndicator forKey="severity" />
                 </button>
@@ -348,9 +348,9 @@ echo "[AegisCrypta] Hardening completed successfully."`
                 <button
                   type="button"
                   onClick={() => toggleSort('cvss')}
-                  className="flex items-center gap-1.5 hover:text-cyan-400 transition-colors font-semibold"
+                  className="flex items-center gap-1.5 hover:text-cyan-700 dark:hover:text-cyan-400 transition-colors font-semibold"
                 >
-                  <Target size={13} className="text-emerald-400" />
+                  <Target size={13} className="text-emerald-600 dark:text-emerald-400" />
                   CVSS Score
                   <SortIndicator forKey="cvss" />
                 </button>
@@ -384,7 +384,7 @@ echo "[AegisCrypta] Hardening completed successfully."`
                       )}
                     </td>
                     <td className="px-5 py-3.5 align-top">
-                      <span className="px-2 py-1 rounded bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-cyan-700 dark:text-cyan-400/90 uppercase tracking-wider text-[10px] font-semibold">
+                      <span className="px-2 py-1 rounded bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-cyan-700 dark:text-cyan-400 uppercase tracking-wider text-[10px] font-semibold">
                         {finding.category || 'Uncategorized'}
                       </span>
                     </td>

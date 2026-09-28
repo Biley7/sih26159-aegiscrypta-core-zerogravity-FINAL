@@ -33,14 +33,14 @@ export const AuditVolumeCard: React.FC<AuditVolumeCardProps> = ({
         : { label: 'All Checks Healthy', className: 'text-emerald-700 dark:text-emerald-400' };
 
   return (
-    <div className={`${className} bg-white dark:bg-slate-900/90 border border-slate-200/90 dark:border-slate-800/80 rounded-lg p-5 transition-colors hover:border-cyan-500/50 flex flex-col justify-between`}>
+    <div className={`${className} bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4 transition-colors hover:border-cyan-500/50 flex flex-col justify-between`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <span className="text-[11px] uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">
             Audit Volume · Core Inquiries
           </span>
-          <span className={`text-[10px] font-mono tracking-widest uppercase ${hasChecks ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-500'}`}>
+          <span className={`text-[10px] font-mono tracking-widest uppercase ${hasChecks ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}`}>
             {hasChecks ? 'Scanned' : 'Pending'}
           </span>
         </div>
@@ -58,7 +58,7 @@ export const AuditVolumeCard: React.FC<AuditVolumeCardProps> = ({
       {bars.length === 0 ? (
         <div className="h-28 flex flex-col items-center justify-center gap-1 px-1 pt-2 pb-1 text-center">
           <span className="text-[11px] font-mono text-slate-600 dark:text-slate-300 tracking-wider">INSUFFICIENT DATA</span>
-          <span className="text-[9px] font-mono text-slate-500 dark:text-slate-500 tracking-wider">
+          <span className="text-[9px] font-mono text-slate-500 dark:text-slate-400 tracking-wider">
             NO CHECKS OR PROTOCOL PROBES IN SCAN RESPONSE
           </span>
         </div>

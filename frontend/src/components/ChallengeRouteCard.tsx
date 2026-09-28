@@ -23,7 +23,7 @@ export const ChallengeRouteCard: React.FC<ChallengeRouteCardProps> = ({
   const unknownProbes = signals.filter((s) => s.value === null).length;
 
   return (
-    <div className={`${className} bg-white dark:bg-slate-900/90 border border-slate-200/90 dark:border-slate-800/80 rounded-lg p-5 transition-colors hover:border-cyan-500/50 flex flex-col justify-between`}>
+    <div className={`${className} bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4 transition-colors hover:border-cyan-500/50 flex flex-col justify-between`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
@@ -46,7 +46,7 @@ export const ChallengeRouteCard: React.FC<ChallengeRouteCardProps> = ({
       {totalProbes === 0 ? (
         <div className="h-28 flex flex-col items-center justify-center gap-1 px-1 pt-2 pb-1 text-center">
           <span className="text-[11px] font-mono text-slate-600 dark:text-slate-300 tracking-wider">INSUFFICIENT DATA</span>
-          <span className="text-[9px] font-mono text-slate-500 dark:text-slate-500 tracking-wider">
+          <span className="text-[9px] font-mono text-slate-500 dark:text-slate-400 tracking-wider">
             NO CHECKS OR PROTOCOL PROBES IN SCAN RESPONSE
           </span>
         </div>
@@ -79,7 +79,7 @@ export const ChallengeRouteCard: React.FC<ChallengeRouteCardProps> = ({
         <span className="tracking-widest uppercase">
           {totalProbes > 0 ? `${totalProbes} Signals Audited` : 'No Signals Audited'}
         </span>
-        <span className={`font-semibold tracking-widest uppercase ${totalProbes === 0 ? 'text-slate-500 dark:text-slate-500' : 'text-emerald-700 dark:text-emerald-400'}`}>
+        <span className={`font-semibold tracking-widest uppercase ${totalProbes === 0 ? 'text-slate-500 dark:text-slate-400' : 'text-emerald-700 dark:text-emerald-400'}`}>
           {totalProbes === 0
             ? 'Insufficient Data'
             : `${passedProbes}/${totalProbes} OK${unknownProbes > 0 ? ` · ${unknownProbes} N/A` : ''}`}

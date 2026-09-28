@@ -169,7 +169,7 @@ export const SecurityReportModal: React.FC<SecurityReportModalProps> = ({
               Protocol Compliance Checklist
             </h3>
             {reportItems.length === 0 ? (
-              <div className="p-5 rounded-md bg-slate-50 dark:bg-slate-800/40 border border-dashed border-slate-300 dark:border-slate-700 text-center">
+              <div className="p-5 rounded-md bg-slate-50 dark:bg-slate-800/40 border border-dotted border-slate-300 dark:border-slate-700 text-center">
                 <div className="text-xs font-semibold text-slate-700 dark:text-slate-200">No audit checks available</div>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 font-sans">
                   Run a scan to populate this checklist with the checks the backend actually executed.
@@ -233,7 +233,7 @@ export const SecurityReportModal: React.FC<SecurityReportModalProps> = ({
 
         {/* Modal Actions Footer */}
         <div className="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-950/70 flex flex-wrap items-center justify-between gap-3">
-          <div className="text-[11px] font-mono text-slate-500 dark:text-slate-500 flex items-center gap-1.5">
+          <div className="text-[11px] font-mono text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
             <Lock size={11} />
             <span>CONFIDENTIAL // FOR INSTITUTIONAL USE ONLY</span>
           </div>
@@ -258,7 +258,7 @@ export const SecurityReportModal: React.FC<SecurityReportModalProps> = ({
             <button
               type="button"
               onClick={onExportPdf}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition-colors"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-cyan-700 hover:bg-cyan-600 dark:bg-cyan-600 dark:hover:bg-cyan-500 text-white font-semibold text-xs transition-colors"
             >
               <Download size={13} />
               <span>Download PDF</span>

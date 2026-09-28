@@ -115,7 +115,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 onClick={() => handleThemeChange('dark')}
                 className={`p-3 rounded-md border text-left transition-colors font-mono ${
                   settings.theme === 'dark'
-                    ? 'border-blue-500 bg-blue-500/10 text-slate-900 dark:text-white font-semibold'
+                    ? 'border-cyan-500 bg-cyan-500/10 text-slate-900 dark:text-white font-semibold'
                     : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700'
                 }`}
               >
@@ -124,9 +124,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     <Moon size={13} className="text-indigo-400 dark:text-slate-400" />
                     <span>Deep Dark</span>
                   </div>
-                  {settings.theme === 'dark' && <Check size={12} className="text-blue-500 dark:text-blue-400" />}
+                  {settings.theme === 'dark' && <Check size={12} className="text-cyan-600 dark:text-cyan-400" />}
                 </div>
-                <span className="text-[10px] text-slate-500 dark:text-slate-500 block">#090D16 SOC Base</span>
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 block">#090D16 SOC Base</span>
               </button>
 
               {/* Slate Light */}
@@ -135,7 +135,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 onClick={() => handleThemeChange('light')}
                 className={`p-3 rounded-md border text-left transition-colors font-mono ${
                   settings.theme === 'light'
-                    ? 'border-blue-500 bg-blue-500/10 text-slate-900 dark:text-white font-semibold'
+                    ? 'border-cyan-500 bg-cyan-500/10 text-slate-900 dark:text-white font-semibold'
                     : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700'
                 }`}
               >
@@ -144,9 +144,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     <Sun size={13} className="text-amber-500 dark:text-amber-400" />
                     <span>Slate Light</span>
                   </div>
-                  {settings.theme === 'light' && <Check size={12} className="text-blue-500 dark:text-blue-400" />}
+                  {settings.theme === 'light' && <Check size={12} className="text-cyan-600 dark:text-cyan-400" />}
                 </div>
-                <span className="text-[10px] text-slate-500 dark:text-slate-500 block">#F8FAFC Daylight</span>
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 block">#F8FAFC Daylight</span>
               </button>
 
               {/* High Contrast OLED */}
@@ -155,7 +155,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 onClick={() => handleThemeChange('high-contrast')}
                 className={`p-3 rounded-md border text-left transition-colors font-mono ${
                   settings.theme === 'high-contrast'
-                    ? 'border-blue-500 bg-blue-500/10 text-slate-900 dark:text-white font-semibold'
+                    ? 'border-cyan-500 bg-cyan-500/10 text-slate-900 dark:text-white font-semibold'
                     : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700'
                 }`}
               >
@@ -164,9 +164,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     <Shield size={13} className="text-emerald-500 dark:text-emerald-400" />
                     <span>Pure Black</span>
                   </div>
-                  {settings.theme === 'high-contrast' && <Check size={12} className="text-blue-500 dark:text-blue-400" />}
+                  {settings.theme === 'high-contrast' && <Check size={12} className="text-cyan-600 dark:text-cyan-400" />}
                 </div>
-                <span className="text-[10px] text-slate-500 dark:text-slate-500 block">OLED High-Contrast</span>
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 block">OLED High-Contrast</span>
               </button>
             </div>
           </section>
@@ -197,7 +197,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
                 <button
                   type="submit"
-                  className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-mono text-xs font-semibold transition-colors"
+                  className="px-3 py-1.5 rounded-lg bg-cyan-700 hover:bg-cyan-600 dark:bg-cyan-600 dark:hover:bg-cyan-500 text-white font-mono text-xs font-semibold transition-colors"
                 >
                   {urlSaved ? 'Saved ✓' : 'Save'}
                 </button>
@@ -253,7 +253,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               />
               <button
                 type="submit"
-                className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-mono text-xs font-semibold transition-colors"
+                className="px-3 py-1.5 rounded-lg bg-cyan-700 hover:bg-cyan-600 dark:bg-cyan-600 dark:hover:bg-cyan-500 text-white font-mono text-xs font-semibold transition-colors"
               >
                 {apiKeySaved ? 'Saved' : 'Set Key'}
               </button>
@@ -264,7 +264,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
         {/* Footer */}
         <div className="p-3.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-950/70 flex items-center justify-between text-xs font-mono">
-          <span className="text-slate-500 dark:text-slate-500 text-[11px]">
+          <span className="text-slate-500 dark:text-slate-400 text-[11px]">
             Aegiscripta Enterprise SOC v2.4
           </span>
           <button

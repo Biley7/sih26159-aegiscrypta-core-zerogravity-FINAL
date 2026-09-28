@@ -37,7 +37,7 @@ export const CryptoSessionsCard: React.FC<CryptoSessionsCardProps> = ({
   const hasPosture = cryptoPosture !== null;
 
   return (
-    <div className={`${className} bg-white dark:bg-slate-900/90 border border-slate-200/90 dark:border-slate-800/80 rounded-lg p-5 transition-colors hover:border-cyan-500/50 flex flex-col justify-between`}>
+    <div className={`${className} bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4 transition-colors hover:border-cyan-500/50 flex flex-col justify-between`}>
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div>
@@ -145,7 +145,7 @@ export const CryptoSessionsCard: React.FC<CryptoSessionsCardProps> = ({
       <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-[10px] font-mono text-slate-500 dark:text-slate-400">
         <span className="flex items-center gap-1.5 tracking-wider">
           <span className={`w-1.5 h-1.5 rounded-full ${hasPosture ? 'bg-cyan-500 dark:bg-cyan-400 animate-pulse' : 'bg-slate-400 dark:bg-slate-600'}`}></span>
-          <span className={hasPosture ? 'text-cyan-700 dark:text-cyan-400 tracking-wider' : 'text-slate-500 dark:text-slate-500 tracking-wider'}>
+          <span className={hasPosture ? 'text-cyan-700 dark:text-cyan-400 tracking-wider' : 'text-slate-500 dark:text-slate-400 tracking-wider'}>
             {hasPosture
               ? pqcEvaluated
                 ? 'PQC indicators evaluated'
@@ -153,7 +153,7 @@ export const CryptoSessionsCard: React.FC<CryptoSessionsCardProps> = ({
               : 'No crypto posture data'}
           </span>
         </span>
-        <span className={`font-semibold tracking-widest uppercase ${checkList.length > 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-500'}`}>
+        <span className={`font-semibold tracking-widest uppercase ${checkList.length > 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}`}>
           {checkList.length > 0 ? `${passCount}/${checkList.length} Pass` : 'Awaiting scan'}
         </span>
       </div>

@@ -39,7 +39,7 @@ export const ActiveReportCard: React.FC<ActiveReportCardProps> = ({
   ];
 
   return (
-    <div className={`${className} bg-white dark:bg-slate-900/90 border border-slate-200/90 dark:border-slate-800/80 rounded-lg p-5 transition-colors hover:border-cyan-500/50 flex flex-col justify-between`}>
+    <div className={`${className} bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4 transition-colors hover:border-cyan-500/50 flex flex-col justify-between`}>
       {/* Top Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
@@ -92,7 +92,7 @@ export const ActiveReportCard: React.FC<ActiveReportCardProps> = ({
           <text x="120" y="42" textAnchor="middle" className="fill-slate-500" fontSize="9" fontFamily="monospace" letterSpacing="1">
             INSUFFICIENT DATA
           </text>
-          <text x="120" y="68" textAnchor="middle" className="fill-slate-500 dark:fill-slate-500" fontSize="6.5" fontFamily="monospace">
+          <text x="120" y="68" textAnchor="middle" className="fill-slate-500 dark:fill-slate-400" fontSize="6.5" fontFamily="monospace">
             NO HISTORICAL TIME SERIES IN SCAN RESPONSE
           </text>
         </svg>

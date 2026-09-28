@@ -116,7 +116,7 @@ export const DockedTerminal: React.FC<DockedTerminalProps> = ({
       case 'TLS':
         return <span className="text-blue-700 dark:text-blue-400 font-semibold">[TLS]</span>;
       case 'DNS':
-        return <span className="text-teal-700 dark:text-teal-400 font-semibold">[DNS]</span>;
+        return <span className="text-cyan-700 dark:text-cyan-400 font-semibold">[DNS]</span>;
       case 'SUCCESS':
         return <span className="text-emerald-700 dark:text-emerald-400 font-semibold">[SUCCESS]</span>;
       case 'ERROR':
@@ -136,33 +136,40 @@ export const DockedTerminal: React.FC<DockedTerminalProps> = ({
       {/* Draggable Resize Handle */}
       <div
         onMouseDown={onStartResize}
-        className="h-1.5 w-full cursor-row-resize hover:bg-slate-700 active:bg-blue-500 transition-colors flex items-center justify-center shrink-0 group"
+        className="h-1.5 w-full cursor-row-resize hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors flex items-center justify-center shrink-0 group"
         title="Drag up/down to resize terminal height (48px - 550px)"
       >
-        <div className="w-12 h-1 bg-slate-700 rounded-full group-hover:bg-slate-500 transition-colors" />
+        <div className="w-12 h-1 bg-slate-300 dark:bg-slate-700 rounded-full group-hover:bg-slate-400 dark:group-hover:bg-slate-500 transition-colors" />
       </div>
 
       {/* Terminal Header Bar */}
-      <div className="h-9 px-4 bg-slate-50 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3 shrink-0">
+      <div className="min-h-8 px-3 sm:px-4 py-1 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3 shrink-0">
         
         {/* Left: Terminal status indicator */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <span className="flex items-center gap-1.5">
-              <span className={`w-2 h-2 rounded-full ${backendOnline ? 'bg-emerald-500' : 'bg-rose-500 animate-pulse'}`}></span>
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="flex items-center gap-1.5 shrink-0">
+              <span className={`w-2 h-2 rounded-full shrink-0 ${backendOnline ? 'bg-emerald-500' : 'bg-rose-500 animate-pulse'}`}></span>
               <TerminalIcon size={13} className="text-slate-500 dark:text-slate-300" />
-              <span className="text-xs font-bold text-slate-800 dark:text-slate-100 tracking-wider">
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-100 tracking-wider whitespace-nowrap">
                 AUDIT TERMINAL
               </span>
             </span>
 
-            {/* Subtle Daemon Status Pill */}
-            <span className={`text-[10px] font-mono px-2 py-0.5 rounded border ${
+            {/* Subtle Daemon Status Pill — hidden on narrow viewports to avoid clipping */}
+            <span className={`hidden sm:inline-flex items-center max-w-[180px] lg:max-w-[280px] text-[10px] font-mono px-2 py-0.5 rounded border truncate ${
               backendOnline
-                ? 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10'
-                : 'text-rose-400 border-rose-500/30 bg-rose-500/10'
+                ? 'text-emerald-700 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10'
+                : 'text-rose-700 dark:text-rose-400 border-rose-500/30 bg-rose-500/10'
             }`}>
-              {`${backendOnline === true ? '🟢 DAEMON CONNECTED' : backendOnline === false ? '🔴 DAEMON UNREACHABLE' : '🟡 DAEMON CHECKING'}${apiBaseUrl ? ` · ${apiBaseUrl.replace(/^https?:\/\//, '')}` : ''}`}
+              <span className="truncate">
+                {backendOnline === true ? 'DAEMON CONNECTED' : backendOnline === false ? 'DAEMON UNREACHABLE' : 'DAEMON CHECKING'}
+              </span>
+              {apiBaseUrl && (
+                <span className="hidden lg:inline text-slate-500 dark:text-slate-400 truncate">
+                  &nbsp;· {apiBaseUrl.replace(/^https?:\/\//, '')}
+                </span>
+              )}
             </span>
           </div>
 
@@ -194,8 +201,8 @@ export const DockedTerminal: React.FC<DockedTerminalProps> = ({
             className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors flex items-center gap-1"
             title="Copy logs to clipboard"
           >
-            {copied ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
-            {copied && <span className="text-[10px] text-emerald-400 font-mono">COPIED</span>}
+            {copied ? <Check size={13} className="text-emerald-600 dark:text-emerald-400" /> : <Copy size={13} />}
+            {copied && <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono">COPIED</span>}
           </button>
 
           {/* Maximize / Standard Toggle */}
@@ -235,7 +242,7 @@ export const DockedTerminal: React.FC<DockedTerminalProps> = ({
                   key={log.id}
                   className="flex items-start gap-2 hover:bg-slate-100 dark:hover:bg-slate-900/60 px-1 py-0.5 rounded leading-relaxed"
                 >
-                  <span className="text-[11px] text-slate-500 dark:text-slate-500 shrink-0 select-none">
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 shrink-0 select-none">
                     {log.timestamp}
                   </span>
                   <span className="shrink-0 select-none">
@@ -257,9 +264,7 @@ export const DockedTerminal: React.FC<DockedTerminalProps> = ({
 
           {/* Interactive CLI Input Line */}
           <form
-            onSubmit={handleFormSubmit}
-            className="h-9 px-4 bg-slate-50 dark:bg-slate-900/90 border-t border-slate-200 dark:border-slate-800 flex items-center gap-2 shrink-0"
-          >
+            onSubmit={handleFormSubmit}            className="h-8 px-4 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center gap-2 shrink-0">
             <div className="flex items-center gap-1.5 text-blue-700 dark:text-blue-400 font-bold text-xs select-none">
               <span>aegis</span>
               <span className="text-emerald-700 dark:text-emerald-400">&gt;</span>

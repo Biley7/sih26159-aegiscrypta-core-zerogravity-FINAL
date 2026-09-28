@@ -49,7 +49,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   };
 
   return (
-    <header className="py-3.5 px-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 flex items-center justify-between gap-4 shrink-0 z-20">
+    <header className="py-3 px-5 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between gap-4 shrink-0 z-20">
       {/* Left: Mobile Menu Toggle & Search Bar with Run Audit CTA */}
       <div className="flex items-center gap-3 flex-1 max-w-2xl">
         <button
@@ -64,7 +64,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
         {/* Cyber Search & Audit Trigger Form */}
         <form onSubmit={handleSubmit} className="flex items-center gap-2 w-full">
           <div
-            className={`flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-slate-50 dark:bg-slate-900/90 border transition-colors flex-1 ${
+            className={`flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-slate-50 dark:bg-slate-900 border transition-colors flex-1 ${
               isFocused
                 ? 'border-cyan-500 ring-1 ring-cyan-500/40'
                 : 'border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-600'
@@ -82,7 +82,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               disabled={isScanning}
             />
             {isScanning ? (
-              <RotateCcw size={14} className="text-cyan-400 animate-spin shrink-0" />
+              <RotateCcw size={14} className="text-cyan-600 dark:text-cyan-400 animate-spin shrink-0" />
             ) : (
               <div className="hidden sm:flex items-center gap-1 text-[10px] font-mono tracking-tight text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700 shrink-0">
                 <Command size={10} />
@@ -95,7 +95,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
           <button
             type="submit"
             disabled={isScanning || !searchQuery.trim()}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold font-mono tracking-tight text-black bg-gradient-to-r from-cyan-400 to-teal-400 hover:brightness-110 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_12px_rgba(0,242,254,0.35)] transition-all shrink-0"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded text-[11px] font-semibold font-mono tracking-wider uppercase text-white bg-cyan-700 hover:bg-cyan-600 dark:bg-cyan-600 dark:hover:bg-cyan-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shrink-0"
             title="Execute Real-time Posture Audit"
           >
             {isScanning ? (
@@ -105,7 +105,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               </>
             ) : (
               <>
-                <Play size={12} className="fill-black" />
+                <Play size={12} className="fill-white" />
                 <span>RUN AUDIT</span>
               </>
             )}
@@ -115,10 +115,21 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
 
       {/* Right Side: Backend Status Badge & Security Report Button */}
       <div className="flex items-center gap-3 shrink-0">
-        {/* Backend Online/Offline Status Indicator */}          <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 text-xs font-mono text-slate-600 dark:text-slate-300">
-          <span className={`w-2 h-2 rounded-full ${backendOnline === true ? 'bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : backendOnline === false ? 'bg-rose-400' : 'bg-amber-400'}`}></span>
-          <span className="text-slate-600 dark:text-slate-400">ENGINE:</span>
-          <span className={`font-semibold ${backendOnline === true ? 'text-cyan-700 dark:text-cyan-300' : backendOnline === false ? 'text-rose-600 dark:text-rose-300' : 'text-amber-600 dark:text-amber-300'}`}>
+        {/* Backend reachability. The dot carries the state — pulsing only while there is
+            something to act on — and the label stays muted so it never shouts. */}
+        <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[10px] font-mono tracking-wider">
+          <span
+            className={`w-2 h-2 rounded-full shrink-0 ${
+              backendOnline === true
+                ? 'bg-emerald-500'
+                : backendOnline === false
+                  ? 'bg-rose-500 animate-pulse'
+                  : 'bg-amber-500 animate-pulse'
+            }`}
+            aria-hidden="true"
+          ></span>
+          <span className="text-slate-500 dark:text-slate-400">ENGINE:</span>
+          <span className="font-semibold text-slate-600 dark:text-slate-300">
             {backendOnline === true ? 'ONLINE' : backendOnline === false ? 'OFFLINE' : 'CHECKING'}
           </span>
         </div>
@@ -142,13 +153,11 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
         <button
           type="button"
           onClick={onOpenReportModal}
-          className="group relative inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded text-xs sm:text-sm font-semibold text-slate-800 dark:text-white transition-colors overflow-hidden bg-cyan-500/10 dark:bg-gradient-to-r dark:from-[#00F2FE]/20 dark:via-[#38BDF8]/20 dark:to-[#10B981]/20 hover:bg-cyan-500/20 border border-cyan-500/50 hover:border-cyan-400 active:scale-95"
+          className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-1.5 rounded text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-600 transition-colors"
         >
-          <span className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-          
-          <Download size={14} className="text-cyan-700 dark:text-cyan-300" />
-          <span className="relative font-sans tracking-tight">Security Report</span>
-          <ExternalLink size={12} className="text-cyan-600 dark:text-cyan-400/80" />
+          <Download size={14} className="text-slate-500 dark:text-slate-400" />
+          <span className="font-sans tracking-tight">Security Report</span>
+          <ExternalLink size={12} className="text-slate-500 dark:text-slate-400" />
         </button>
       </div>
     </header>

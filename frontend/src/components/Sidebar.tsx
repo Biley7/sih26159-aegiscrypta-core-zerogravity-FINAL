@@ -99,20 +99,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Pinned left flex sidebar: full height, no overlapping bottom terminal */}
       <aside
-        className={`w-72 h-full flex flex-col shrink-0 bg-white dark:bg-slate-900 shadow-2xl border-r border-slate-200 dark:border-slate-800 z-50 transition-transform duration-300 ease-in-out ${
+        className={`w-64 h-full flex flex-col shrink-0 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 z-50 transition-transform duration-300 ease-in-out ${
           isOpenMobile
             ? 'fixed top-0 bottom-0 left-0 translate-x-0'
             : 'max-lg:fixed max-lg:top-0 max-lg:bottom-0 max-lg:left-0 max-lg:-translate-x-full'
         }`}
       >
         {/* Brand Header */}
-        <div className="h-16 px-5 py-3 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0">
+        <div className="h-14 px-4 py-2.5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between shrink-0">
           <Logo size={28} />
         </div>
 
         {/* Navigation Section */}
-        <div className="flex-1 py-4 px-3 space-y-1 overflow-y-auto custom-scrollbar">
-          <div className="px-3 pb-2 text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 font-bold">
+        <div className="flex-1 py-3 px-2.5 space-y-0.5 overflow-y-auto custom-scrollbar">
+          <div className="px-2.5 pb-1.5 text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 font-bold">
             Operations Matrix
           </div>
 
@@ -133,23 +133,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     }
                     onSelectTab(item.id);
                     if (onCloseMobile) onCloseMobile();
-                  }}
-                  className={`w-full group flex items-center justify-between px-3.5 py-2 rounded text-sm font-medium transition-colors duration-200 relative ${
+                  }}                    className={`w-full group flex items-center justify-between px-2.5 py-1.5 rounded text-[13px] font-medium transition-colors duration-200 relative ${
                     isActive
-                      ? 'bg-cyan-500/10 dark:bg-gradient-to-r dark:from-cyan-500/15 dark:to-transparent text-cyan-700 dark:text-cyan-300 font-semibold border-l-2 border-cyan-500 dark:border-cyan-400'
+                      ? 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 font-semibold border-l-2 border-cyan-500 dark:border-cyan-400'
                       : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/50 border-l-2 border-transparent'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2.5">
                     <Icon
-                      size={17}
+                      size={15}
                       className={`transition-colors ${
                         isActive
                           ? 'text-cyan-600 dark:text-cyan-400'
                           : 'text-slate-700 dark:text-slate-300 group-hover:text-cyan-700 dark:group-hover:text-cyan-300'
                       }`}
                     />
-                    <span className="tracking-tight text-xs sm:text-sm">{item.label}</span>
+                    <span className="tracking-tight text-xs sm:text-[13px]">{item.label}</span>
                   </div>
 
                   <div className="flex items-center gap-2">
@@ -206,10 +205,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
               title="Open Raw Forensic Inspector on Port 8007"
             >
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                <span className="w-2 h-2 rounded-full bg-cyan-500 dark:bg-cyan-400 animate-pulse"></span>
                 <span>Raw Inspector (8007)</span>
               </div>
-              <ExternalLink size={12} className="text-cyan-400 group-hover:translate-x-0.5 transition-transform" />
+              <ExternalLink size={12} className="text-cyan-600 dark:text-cyan-400 group-hover:translate-x-0.5 transition-transform" />
             </button>
           </div>
         </div>
@@ -217,7 +216,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Bottom Status & Settings */}
         <div className="p-3.5 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/95 space-y-2.5 shrink-0">
           {/* System Status Pill */}
-          <div className="p-2.5 rounded bg-slate-50 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+          <div className="p-2.5 rounded bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="relative flex h-2 w-2">
                 <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${

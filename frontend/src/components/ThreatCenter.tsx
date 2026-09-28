@@ -1,20 +1,14 @@
 import React, { useState } from 'react';
 import {
-  ShieldCheck,
   CheckCircle2,
-  Lock,
-  Sparkles,
-  ExternalLink,
   Cpu,
   UserCheck,
   FileKey2,
-  AlertTriangle,
+  ExternalLink,
   ChevronDown,
   ChevronUp,
-  Activity,
   Layers
 } from 'lucide-react';
-import { Logo } from './Logo';
 import { CvssMetrics, ScanResponse } from '../types';
 
 interface ThreatCenterProps {
@@ -112,7 +106,7 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
         case 'EXCELLENT':
           return { label: 'FIS: EXCELLENT POSTURE', textColor: 'text-emerald-700 dark:text-emerald-400', bgColor: 'bg-emerald-50 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-800/50' };
         case 'GOOD':
-          return { label: 'FIS: GOOD POSTURE', textColor: 'text-teal-700 dark:text-teal-400', bgColor: 'bg-teal-50 border-teal-200 dark:bg-teal-950/30 dark:border-teal-800/50' };
+          return { label: 'FIS: GOOD POSTURE', textColor: 'text-emerald-600 dark:text-emerald-400', bgColor: 'bg-emerald-50 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-800/50' };
         case 'ACCEPTABLE':
           return { label: 'FIS: ACCEPTABLE POSTURE', textColor: 'text-amber-600 dark:text-amber-400', bgColor: 'bg-amber-50 border-amber-200 dark:bg-amber-950/30 dark:border-amber-800/50' };
         case 'POOR':
@@ -151,8 +145,90 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
 
   const badge = getClassificationBadge();
 
+  // Inference telemetry readout. Every value here is read from the scan response;
+  // anything the backend did not report is labelled NOT REPORTED rather than invented.
+  const aiRisk = scanData?.ai_risk_score ?? null;
+  const anomaly = scanData?.anomaly_detection ?? null;
+  type TelemetryTone = 'ok' | 'warn' | 'crit' | 'idle';
+  const telemetry: Array<{ key: string; value: string; tone: TelemetryTone }> = [
+    {
+      key: 'Inference',
+      value: aiRisk ? `${aiRisk.risk_level} · ${aiRisk.risk_score}/100` : 'NOT REPORTED',
+      tone: aiRisk ? (aiRisk.risk_score >= 70 ? 'crit' : aiRisk.risk_score >= 40 ? 'warn' : 'ok') : 'idle'
+    },
+    {
+      key: 'Model conf.',
+      value: typeof aiRisk?.confidence === 'number' ? `${(aiRisk.confidence * 100).toFixed(0)}%` : '—',
+      tone: typeof aiRisk?.confidence === 'number' ? 'ok' : 'idle'
+    },
+    {
+      key: 'FIS certainty',
+      value: typeof defuzzificationConfidence === 'number' ? `${(defuzzificationConfidence * 100).toFixed(0)}%` : '—',
+      tone: typeof defuzzificationConfidence === 'number' ? 'ok' : 'idle'
+    },
+    {
+      key: 'Rules fired',
+      value: activatedRules ? String(activatedRules.length) : '—',
+      tone: activatedRules && activatedRules.length > 0 ? 'warn' : 'idle'
+    },
+    {
+      key: 'Anomaly',
+      value: anomaly
+        ? anomaly.anomaly_detected
+          ? `DETECTED · ${anomaly.anomaly_score.toFixed(2)}`
+          : 'CLEAR'
+        : 'NOT REPORTED',
+      tone: anomaly ? (anomaly.anomaly_detected ? 'crit' : 'ok') : 'idle'
+    },
+    {
+      key: 'MTA-STS',
+      value: mtaStsCheck ? mtaStsCheck.status.toUpperCase() : 'NOT REPORTED',
+      tone: mtaStsCheck
+        ? mtaStsCheck.status === 'pass'
+          ? 'ok'
+          : mtaStsCheck.status === 'fail'
+            ? 'crit'
+            : 'warn'
+        : 'idle'
+    },
+    {
+      key: 'PQC scan',
+      value: scanData ? (pqcEvaluated ? 'EVALUATED' : 'NOT EVALUATED') : 'AWAITING SCAN',
+      tone: scanData ? (pqcEvaluated ? 'ok' : 'warn') : 'idle'
+    },
+    {
+      key: 'CVSS',
+      value: cvssMetrics ? `${cvssMetrics.base_score.toFixed(1)} · ${cvssMetrics.severity}` : 'NOT REPORTED',
+      tone: cvssMetrics
+        ? cvssMetrics.base_score >= 7
+          ? 'crit'
+          : cvssMetrics.base_score >= 4
+            ? 'warn'
+            : 'ok'
+        : 'idle'
+    },
+    {
+      key: 'Findings',
+      value: scanData ? String(scanData.prioritized_findings?.length ?? 0) : '—',
+      tone: 'idle'
+    },
+    {
+      key: 'Cert trust',
+      value: primaryCert ? (primaryCert.chain_valid === true ? 'TRUSTED' : primaryCert.chain_valid === false ? 'UNTRUSTED' : 'UNVERIFIED') : 'NOT REPORTED',
+      tone: primaryCert ? (primaryCert.chain_valid === true ? 'ok' : primaryCert.chain_valid === false ? 'crit' : 'warn') : 'idle'
+    }
+  ];
+  const telemetryTone = (tone: TelemetryTone): string =>
+    tone === 'ok'
+      ? 'text-emerald-600 dark:text-emerald-400'
+      : tone === 'warn'
+        ? 'text-amber-600 dark:text-amber-400'
+        : tone === 'crit'
+          ? 'text-rose-600 dark:text-rose-400'
+          : 'text-slate-500 dark:text-slate-400';
+
   return (
-    <div className={`${className} bg-white dark:bg-slate-900/90 border border-slate-200/90 dark:border-slate-800/80 rounded-lg p-5 hover:border-cyan-500/50 transition-colors overflow-hidden`}>
+    <div className={`${className} bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4 hover:border-cyan-500/50 transition-colors overflow-hidden`}>
       {cvssMetrics && (
         <div className="mb-5 rounded border border-amber-500/30 bg-amber-500/10 p-3 font-mono text-xs text-amber-800 dark:text-amber-100" aria-label="CVSS vulnerability metrics">
           <div className="flex flex-wrap items-center gap-2">
@@ -255,43 +331,53 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
         {/* CENTER COLUMN: Re-Engineered Speedometer Gauge */}
         <div className="lg:col-span-4 flex flex-col items-center justify-center py-2">
           
-          {/* Centered SVG Speedometer Canvas (Radius 100, Stroke 12) */}
+          {/* Centered SVG speedometer — pivot (140,130), radius 100, 7px hairline arc.
+              Band boundaries sit exactly on the 30% and 70% needle positions
+              (risk -> theta = 180 - 1.8 * risk degrees). */}
           <div className="relative w-64 h-36 flex items-end justify-center">
             <svg
               viewBox="0 0 280 170"
               className="w-full h-full"
               role="img"
-              aria-label="Risk index half-dial"
+              aria-label={`Risk index half-dial: ${resolvedScore !== null ? `${resolvedScore} of 100` : 'no score reported'}`}
             >
-              {/* Full Background Track Arc — pivot (140,130), radius 100, stroke 12 */}
+              {/* Full background track */}
               <path
                 d="M 40 130 A 100 100 0 0 1 240 130"
                 fill="none"
                 className="stroke-slate-200 dark:stroke-slate-800"
-                strokeWidth="12"
+                strokeWidth="7"
                 strokeLinecap="round"
               />
 
-              {/* Segment 1: Forest Emerald (0-30% Risk) */}
-              <path d="M 40 130 A 100 100 0 0 1 90 43.4" fill="none" stroke="#10b981" strokeWidth="12" strokeLinecap="round" />
+              {/* Dark-mode bloom: a blurred duplicate of the bands, never bright.
+                  Decorative only, so it is hidden from assistive tech. */}
+              <g className="hidden dark:block opacity-30 blur-[3px]" aria-hidden="true">
+                <path d="M 40 130 A 100 100 0 0 1 83.36 47.59" fill="none" stroke="#059669" strokeWidth="7" strokeLinecap="round" />
+                <path d="M 79.12 50.66 A 100 100 0 0 1 200.88 50.66" fill="none" stroke="#f59e0b" strokeWidth="7" />
+                <path d="M 196.64 47.59 A 100 100 0 0 1 240 130" fill="none" stroke="#e11d48" strokeWidth="7" strokeLinecap="round" />
+              </g>
 
-              {/* Segment 2: Solid Amber (31-70% Risk) */}
-              <path d="M 96 39.5 A 100 100 0 0 1 184 39.5" fill="none" stroke="#f59e0b" strokeWidth="12" />
+              {/* Band 1 — deep emerald, risk 0-30% */}
+              <path d="M 40 130 A 100 100 0 0 1 83.36 47.59" fill="none" stroke="#059669" strokeWidth="7" strokeLinecap="round" />
 
-              {/* Segment 3: Deep Rose (71-100% Risk) */}
-              <path d="M 190 43.4 A 100 100 0 0 1 240 130" fill="none" stroke="#f43f5e" strokeWidth="12" strokeLinecap="round" />
+              {/* Band 2 — amber, risk 30-70% */}
+              <path d="M 79.12 50.66 A 100 100 0 0 1 200.88 50.66" fill="none" stroke="#f59e0b" strokeWidth="7" />
 
-              {/* Scale tick markers — baselines clear the 12px arc stroke */}
+              {/* Band 3 — crimson, risk 70-100% */}
+              <path d="M 196.64 47.59 A 100 100 0 0 1 240 130" fill="none" stroke="#e11d48" strokeWidth="7" strokeLinecap="round" />
+
+              {/* Scale ticks */}
               <text x="30" y="156" className="fill-slate-500" fontSize="9" fontFamily="monospace" textAnchor="middle">0</text>
-              <text x="140" y="16" className="fill-slate-500" fontSize="9" fontFamily="monospace" textAnchor="middle">50</text>
+              <text x="140" y="18" className="fill-slate-500" fontSize="9" fontFamily="monospace" textAnchor="middle">50</text>
               <text x="250" y="156" className="fill-slate-500" fontSize="9" fontFamily="monospace" textAnchor="middle">100</text>
 
-              {/* Needle pivot at (140,130); tip stays inside the arc inner edge */}
+              {/* Needle, pivot at (140,130) — tip stays clear of the inner arc edge */}
               {resolvedScore !== null && (
                 <g transform={`rotate(${angle} 140 130)`}>
-                  <polygon points="138,130 140,42 142,130" className="fill-slate-700 dark:fill-slate-100" />
-                  <circle cx="140" cy="130" r="8" className="fill-white dark:fill-slate-900" stroke="#3b82f6" strokeWidth="2" />
-                  <circle cx="140" cy="130" r="3" className="fill-slate-500 dark:fill-slate-200" />
+                  <polygon points="138.5,130 140,46 141.5,130" className="fill-slate-600 dark:fill-slate-300" />
+                  <circle cx="140" cy="130" r="5" className="fill-white dark:fill-slate-900 stroke-slate-400 dark:stroke-slate-600" strokeWidth="1.5" />
+                  <circle cx="140" cy="130" r="2" className="fill-slate-500 dark:fill-slate-400" />
                 </g>
               )}
             </svg>
@@ -318,81 +404,38 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
           </div>
         </div>
 
-        {/* RIGHT COLUMN: AI Sentinel & Autonomous Verification */}
-        <div className="lg:col-span-4 flex flex-col items-center justify-center relative min-h-[160px]">
-          
-          {/* AI Forensic Audit Interactive Pill */}
+        {/* RIGHT COLUMN: AI inference telemetry readout */}
+        <div className="lg:col-span-4 flex flex-col justify-center gap-2 min-h-[160px]">
+
+          {/* AI Forensic Audit entry point */}
           <button
             type="button"
             onClick={onOpenReportModal}
-            className="mb-3 px-3 py-1.5 rounded bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-sans font-medium text-slate-700 dark:text-slate-200 flex items-center gap-2 transition-colors"
-            title="Inspect AI Forensic Remediation Guidance"
+            className="self-start inline-flex items-center gap-1.5 px-2.5 py-1 rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/60 text-[10px] font-mono font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-300 hover:border-cyan-500/50 hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors"
+            title="Inspect AI forensic remediation guidance"
           >
-            <Sparkles size={13} className="text-blue-600 dark:text-blue-400" />
+            <Cpu size={11} />
             <span>AI Forensic Audit</span>
-            <ExternalLink size={11} className="text-slate-500 dark:text-slate-400" />
+            <ExternalLink size={10} className="opacity-70" />
           </button>
 
-          {/* Neural Core + Network Nodes */}
-          <div className="relative w-44 h-32 flex items-center justify-center">
-            
-            <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 176 128">
-              <line
-                x1="88"
-                y1="64"
-                x2="140"
-                y2="30"
-                className="stroke-slate-300 dark:stroke-slate-700"
-                strokeWidth="1.5"
-                strokeDasharray="3 3"
-              />
-              <line
-                x1="88"
-                y1="64"
-                x2="140"
-                y2="98"
-                className="stroke-slate-300 dark:stroke-slate-700"
-                strokeWidth="1.5"
-                strokeDasharray="3 3"
-              />
-              <circle cx="114" cy="47" r="2" fill="#3b82f6" />
-              <circle cx="114" cy="81" r="2" fill="#3b82f6" />
-            </svg>
-
-            {/* Central AI Node */}
-            <div
-              onClick={onOpenReportModal}
-              className="relative z-10 w-14 h-14 rounded-full bg-white dark:bg-slate-800 border border-blue-500/60 flex items-center justify-center group hover:border-blue-400 transition-colors cursor-pointer"
-              title="Click to view AI cryptographic risk findings"
-            >
-              <div className="flex flex-col items-center justify-center">
-                <span className="text-sm font-bold font-mono text-slate-800 dark:text-slate-100">
-                  AI
-                </span>
-                <span className="text-[7px] font-mono text-blue-600 dark:text-blue-400 font-semibold tracking-wider">
-                  ACTIVE
-                </span>
-              </div>
+          {/* Rigid telemetry grid — replaces the decorative node graphic. Mono only,
+              because every value is an identifier, count or score. */}
+          <div className="w-full rounded border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 p-2.5 font-mono text-[10px] leading-relaxed">
+            <div className="flex items-center justify-between gap-2 pb-1.5 mb-1.5 border-b border-slate-200 dark:border-slate-800">
+              <span className="text-slate-500 dark:text-slate-400 tracking-wider">[SYS] INFERENCE ENGINE</span>
+              <span className="text-slate-500 dark:text-slate-400 tracking-wider">{scanData ? 'LIVE' : 'IDLE'}</span>
             </div>
-
-            {/* Lock Badges */}
-            <div
-              className="absolute top-1 right-2 w-9 h-9 rounded bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-300"
-              title={mtaStsCheck ? `MTA-STS policy status: ${mtaStsCheck.status.toUpperCase()}` : 'No MTA-STS policy data in this scan'}
-            >
-              <Lock size={14} className="text-slate-500 dark:text-slate-300" />
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-x-3 gap-y-0.5">
+              {telemetry.map((row) => (
+                <div key={row.key} className="flex items-center justify-between gap-2 min-w-0">
+                  <span className="text-slate-500 dark:text-slate-400 truncate">{row.key}</span>
+                  <span className={`font-semibold tracking-tight truncate ${telemetryTone(row.tone)}`} title={row.value}>
+                    {row.value}
+                  </span>
+                </div>
+              ))}
             </div>
-
-            <div
-              className="absolute bottom-1 right-2 w-9 h-9 rounded bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-emerald-600 dark:text-emerald-400"
-              title={pqcEvaluated ? 'PQC indicators evaluated by the backend scan' : 'PQC indicators not evaluated by the backend scan'}
-            >
-              <ShieldCheck size={14} className="text-emerald-600 dark:text-emerald-400" />
-            </div>
-          </div>
-
-          <div className="mt-2 text-[10px] font-mono text-slate-500 dark:text-slate-400 text-center">
-            {scanData ? 'Policy view built from latest scan response' : 'Awaiting scan response'}
           </div>
         </div>
 
@@ -484,7 +527,7 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
                       style={{ width: `${Math.max(4, pct)}%` }}
                     />
                   </div>
-                  <span className="text-[9px] text-slate-500 dark:text-slate-500 truncate">{item.desc}</span>
+                  <span className="text-[9px] text-slate-500 dark:text-slate-400 truncate">{item.desc}</span>
                 </div>
               );
             })}

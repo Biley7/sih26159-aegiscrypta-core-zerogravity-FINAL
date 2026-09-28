@@ -139,14 +139,14 @@ export const CertificateInspectorModal: React.FC<CertificateInspectorModalProps>
           )}
 
           {!certData ? (
-            <div className="p-8 rounded bg-slate-50 dark:bg-slate-800/40 border border-dashed border-slate-300 dark:border-slate-700 text-center space-y-2">
+            <div className="p-8 rounded bg-slate-50 dark:bg-slate-800/40 border border-dotted border-slate-300 dark:border-slate-700 text-center space-y-2">
               <div className="text-sm font-semibold text-slate-800 dark:text-slate-200 font-sans">Certificate Data Unavailable</div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 font-sans max-w-md mx-auto leading-relaxed">
                 The latest scan of {domain} did not return X.509 certificate telemetry. No fallback certificate
                 identity, serial, validity window, or fingerprint is displayed because fabricated values would
                 misrepresent the audit.
               </p>
-              <p className="text-[10px] text-slate-500 dark:text-slate-500 font-mono tracking-tight pt-1">
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 font-mono tracking-tight pt-1">
                 Run a scan against a domain with an auditable MX/STARTTLS endpoint to populate this view.
               </p>
             </div>

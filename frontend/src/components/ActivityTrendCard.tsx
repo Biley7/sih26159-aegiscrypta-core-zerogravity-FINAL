@@ -83,7 +83,7 @@ export const ActivityTrendCard: React.FC<ActivityTrendCardProps> = ({
     : 'No Cert Data';
 
   return (
-    <div className={`${className} bg-white dark:bg-slate-900/90 border border-slate-200/90 dark:border-slate-800/80 rounded-lg p-5 transition-colors hover:border-cyan-500/50 flex flex-col justify-between`}>
+    <div className={`${className} bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4 transition-colors hover:border-cyan-500/50 flex flex-col justify-between`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
@@ -143,7 +143,7 @@ export const ActivityTrendCard: React.FC<ActivityTrendCardProps> = ({
       {/* Footer */}
       <div className="pt-3 mt-2 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-[10px] font-mono text-slate-500 dark:text-slate-400">
         <span className="tracking-widest uppercase">Chain: {chainLabel}</span>
-        <span className={`font-semibold tracking-widest uppercase ${total > 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-500'}`}>
+        <span className={`font-semibold tracking-widest uppercase ${total > 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}`}>
           {total > 0 ? `${passCount}/${total} Checks Pass` : 'No Check Data'}
         </span>
       </div>

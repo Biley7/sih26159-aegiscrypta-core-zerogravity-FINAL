@@ -87,7 +87,7 @@ export const EmailCredentialsCard: React.FC<EmailCredentialsCardProps> = ({
   const line1Path = `M ${line1Points.map((p) => `${p.x} ${p.y}`).join(' L ')}`;
 
   return (
-    <div className={`${className} bg-white dark:bg-slate-900/90 border border-slate-200/90 dark:border-slate-800/80 rounded-lg p-5 transition-colors hover:border-cyan-500/50 flex flex-col justify-between`}>
+    <div className={`${className} bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4 transition-colors hover:border-cyan-500/50 flex flex-col justify-between`}>
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
@@ -162,17 +162,17 @@ export const EmailCredentialsCard: React.FC<EmailCredentialsCardProps> = ({
 
       {/* Axis & Legend */}
       <div className="pt-3 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between text-[10px] font-mono text-slate-600 dark:text-slate-400">
-        <div className="flex items-center gap-4">
-          <span className="flex items-center gap-1.5">
-            <span className="w-3 h-0.5 inline-block bg-cyan-600 dark:bg-cyan-400"></span>
-            <span className="tracking-widest uppercase">Latest scan checks</span>
+        <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+          <span className="flex items-center gap-1.5 min-w-0">
+            <span className="w-3 h-0.5 inline-block shrink-0 bg-cyan-600 dark:bg-cyan-400"></span>
+            <span className="tracking-widest uppercase truncate whitespace-nowrap">Latest scan checks</span>
           </span>
-          <span className="flex items-center gap-1.5">
+          <span className="flex items-center gap-1.5 shrink-0">
             <span className="w-2 h-2 rounded-full inline-block border-2 border-slate-500 dark:border-slate-400"></span>
-            <span className="tracking-widest uppercase">Unknown</span>
+            <span className="tracking-widest uppercase whitespace-nowrap">Unknown</span>
           </span>
         </div>
-        <span className={`font-semibold tracking-widest uppercase ${unknownCount > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+        <span className={`font-semibold tracking-widest uppercase whitespace-nowrap shrink-0 ${unknownCount > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
           {totalPassed}/{totalEvaluated} Passed{unknownCount > 0 ? ` · ${unknownCount} N/A` : ''}
         </span>
       </div>

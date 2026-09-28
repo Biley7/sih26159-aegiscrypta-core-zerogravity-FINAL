@@ -583,8 +583,8 @@ export function App() {
           {/* SESSIONS TAB: Passive PCAP Forensics Stream Reassembly */}
           {activeTab === 'sessions' ? (
             <div className="space-y-5">
-              <section className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800/80 rounded-md p-5 hover:border-cyan-500/50 transition-colors">
-                <div className="flex items-center justify-between mb-5 pb-4 border-b border-slate-200 dark:border-slate-800/60">
+              <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4 hover:border-cyan-500/50 transition-colors">
+                <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-200 dark:border-slate-800">
                   <div>
                     <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                       <Shield size={18} className="text-cyan-600 dark:text-cyan-400" />
@@ -597,7 +597,7 @@ export function App() {
                   <button
                     type="button"
                     onClick={() => setActiveTab('overview')}
-                    className="px-3.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-900/60 hover:bg-slate-200 dark:hover:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-mono text-cyan-700 dark:text-cyan-400/90 transition-colors"
+                    className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 text-xs font-mono text-cyan-700 dark:text-cyan-400 transition-colors"
                   >
                     Back to Overview
                   </button>
@@ -611,14 +611,16 @@ export function App() {
             </div>
           ) : (
             /* UNIFIED 12-COLUMN SIH 26159 CYBER-SOC DASHBOARD */
-            <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-stretch auto-rows-fr">
+            /* auto-rows-auto (not -fr): rows must size to their own content, otherwise
+               every row inherits the tallest row's height and strands vertical space. */
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 items-stretch auto-rows-auto">
 
               {/* ROW 1 · 12 Cols: Telemetry Header + 3-Card Top Row (4 / 5 / 3 split) */}
 
               {/* Card 1 · Email Cryptographic Sessions (4/12) */}
               <div className="xl:col-span-4 flex">
                 <CryptoSessionsCard
-                  className="flex-1"
+                  className="flex-1 min-w-0"
                   score={scanData ? (scanData.security_score ?? scanData.score) : null}
                   checks={scanData?.checks}
                   cryptoPosture={scanData?.crypto_posture}
@@ -629,7 +631,7 @@ export function App() {
               {/* Card 2 · Key Protocol / Mode Monitor (5/12) */}
               <div className="xl:col-span-5 flex">
                 <KeyProtocolCard
-                  className="flex-1"
+                  className="flex-1 min-w-0"
                   cryptoPosture={scanData?.crypto_posture}
                   checks={scanData?.checks}
                   score={score}
@@ -643,7 +645,7 @@ export function App() {
               {/* Card 3 · Active Security Report / Posture (3/12) */}
               <div className="xl:col-span-3 flex">
                 <ActiveReportCard
-                  className="flex-1"
+                  className="flex-1 min-w-0"
                   checks={scanData?.checks}
                   score={score}
                   cryptoPosture={scanData?.crypto_posture}
@@ -655,7 +657,7 @@ export function App() {
               {/* ROW 2 · 12 Cols: HERO — Threat Center spans full width with speedometer + CVSS + explainability */}
               <div className="xl:col-span-12 flex">
                 <ThreatCenter
-                  className="flex-1 w-full"
+                  className="flex-1 w-full min-w-0"
                   score={scanData ? (scanData.security_score ?? scanData.score) : null}
                   scanData={scanData}
                   domain={currentDomain}
@@ -679,7 +681,7 @@ export function App() {
               {/* Card 4 · Email Credentials / Identity Chain (4/12) */}
               <div className="xl:col-span-4 flex">
                 <EmailCredentialsCard
-                  className="flex-1"
+                  className="flex-1 min-w-0"
                   checks={scanData?.checks}
                   cryptoPosture={scanData?.crypto_posture}
                   onExpand={() => setIsCertModalOpen(true)}
@@ -689,7 +691,7 @@ export function App() {
               {/* Card 5 · Challenge Routes / Ingress Probes (5/12) */}
               <div className="xl:col-span-5 flex">
                 <ChallengeRouteCard
-                  className="flex-1"
+                  className="flex-1 min-w-0"
                   checks={scanData?.checks}
                   cryptoPosture={scanData?.crypto_posture}
                   onExpand={() => setActiveTab('verification')}
@@ -719,7 +721,7 @@ export function App() {
 
           {/* Selected Credential Node Detail Drawer */}
           {selectedNodeId && (
-            <div className="p-3.5 rounded-md bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 flex items-center justify-between gap-4 font-mono text-xs animate-fade-in">
+            <div className="p-3 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-between gap-4 font-mono text-xs animate-fade-in">
               <div className="flex items-center gap-2.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                 <div>
