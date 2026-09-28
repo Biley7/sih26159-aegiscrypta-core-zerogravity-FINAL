@@ -169,6 +169,31 @@ def _cleartext_credential_pcap() -> bytes:
     return _make_pcap(pkts)
 
 
+def _smtp_auth_login_pcap() -> bytes:
+    """SMTP session exposing credentials via the AUTH LOGIN base64 challenge/response.
+
+    This is the regression fixture for the protocol-label bug: the ``LOGIN`` token
+    pattern is byte-identical across SMTP and IMAP, so the finding must be labelled
+    from the stream protocol actually observed (SMTP here), never hardcoded IMAP.
+    """
+    import base64
+    user_token = base64.b64encode(b"user@example.com").decode()
+    pass_token = base64.b64encode(b"password123").decode()
+    pkts = [
+        IP(src="1.2.3.4", dst="5.6.7.8") / TCP(sport=25, dport=60004, seq=7000) /
+            b"220 mail.example.com ESMTP\r\n",
+        IP(src="5.6.7.8", dst="1.2.3.4") / TCP(sport=60004, dport=25, seq=8000) /
+            b"EHLO client.example.com\r\n",
+        IP(src="1.2.3.4", dst="5.6.7.8") / TCP(sport=25, dport=60004, seq=7027) /
+            b"250-mail.example.com\r\n250 AUTH LOGIN PLAIN\r\n",
+        IP(src="5.6.7.8", dst="1.2.3.4") / TCP(sport=60004, dport=25, seq=8067) /
+            b"AUTH LOGIN\r\n",
+        IP(src="1.2.3.4", dst="5.6.7.8") / TCP(sport=25, dport=60004, seq=7079) /
+            (f"{user_token}\r\n{pass_token}\r\n").encode(),
+    ]
+    return _make_pcap(pkts)
+
+
 def _malformed_pcap() -> bytes:
     """Truncated / random garbage that is not a valid PCAP file."""
     return b"\x00\x01\x02\x03garbage_not_a_pcap_file" * 10
@@ -392,6 +417,27 @@ class TestCredentialDetection:
             f"T8 FAIL: Credential finding should be CRITICAL. Got: {severities}"
         )
 
+    def test_auth_login_credential_finding_names_smtp_not_imap(self):
+        """
+        Regression: an SMTP AUTH LOGIN challenge/response must be labelled with the
+        protocol observed on the stream. The LOGIN regex is protocol-agnostic, so a
+        hardcoded "IMAP Cleartext Login" label previously mislabelled SMTP captures.
+        """
+        result = analyze_pcap_stream(_smtp_auth_login_pcap(), filename="auth_login.pcap")
+        titles = [f.title for f in result.summary_findings]
+        credential_titles = [t for t in titles if "Cleartext Credential Exposure" in t]
+        assert credential_titles, (
+            f"FAIL: No cleartext credential finding for an SMTP AUTH LOGIN stream. "
+            f"Findings: {titles}"
+        )
+        assert any("SMTP" in t for t in credential_titles), (
+            f"FAIL: Credential finding must name the SMTP stream protocol. "
+            f"Got: {credential_titles}"
+        )
+        assert not any("IMAP" in t for t in credential_titles), (
+            f"FAIL: SMTP stream mislabelled as IMAP. Got: {credential_titles}"
+        )
+
 
 # ---------------------------------------------------------------------------
 # T9 — Cert chain validation and sig algo through PCAP parse path (Step 3.3)
@@ -412,7 +458,8 @@ class TestCertChainAndSigAlgoViaPcap:
     """
 
     @pytest.fixture(scope="class")
-    def self_signed_der(self):
+    @classmethod
+    def self_signed_der(cls):
         """Generate a minimal self-signed RSA certificate for testing."""
         from cryptography import x509
         from cryptography.x509.oid import NameOID

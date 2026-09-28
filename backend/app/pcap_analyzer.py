@@ -59,24 +59,31 @@ def identify_protocol(sport: int, dport: int, payload: bytes) -> str:
     return "TCP/Unknown"
 
 
-def detect_cleartext_credentials(text: str) -> List[Tuple[str, str]]:
+def detect_cleartext_credentials(text: str, protocol: str = "Mail") -> List[Tuple[str, str]]:
     """
     Detects exposed passwords or credentials in plaintext mail sessions (SMTP/IMAP/POP3).
     Returns list of (type, masked_token) tuples.
+
+    ``protocol`` labels each finding with the protocol actually observed on the
+    stream. The token patterns themselves are protocol-agnostic on the wire — an
+    ``AUTH LOGIN`` challenge/response is byte-identical whether it arrives over
+    SMTP or IMAP — so hardcoding a protocol here previously mislabelled SMTP
+    ``AUTH LOGIN`` captures as IMAP. Callers pass the detected stream protocol;
+    the neutral "Mail" default keeps the signature safe for direct callers.
     """
     findings = []
-    
+
     # POP3 USER / PASS
     pop3_pass = re.findall(r"\bPASS\s+([^\r\n]+)", text, re.IGNORECASE)
     for p in pop3_pass:
         masked = p[:2] + "****" if len(p) > 2 else "****"
-        findings.append(("POP3 Cleartext Password", masked))
+        findings.append((f"{protocol} Cleartext Password", masked))
 
-    # IMAP LOGIN user pass
+    # LOGIN user pass (SMTP AUTH LOGIN challenge/response, or IMAP LOGIN)
     imap_login = re.findall(r"\bLOGIN\s+([^\s\r\n]+)\s+([^\r\n]+)", text, re.IGNORECASE)
     for u, p in imap_login:
         masked_p = p[:2] + "****" if len(p) > 2 else "****"
-        findings.append(("IMAP Cleartext Login", f"User: {u}, Pass: {masked_p}"))
+        findings.append((f"{protocol} Cleartext Login", f"User: {u}, Pass: {masked_p}"))
 
     # SMTP AUTH PLAIN or AUTH LOGIN tokens
     auth_plain = re.findall(r"\bAUTH\s+PLAIN\s+([A-Za-z0-9+/=]{8,})", text, re.IGNORECASE)
@@ -85,9 +92,9 @@ def detect_cleartext_credentials(text: str) -> List[Tuple[str, str]]:
             decoded = base64.b64decode(token).decode("utf-8", errors="ignore")
             parts = decoded.split("\x00")
             user = parts[1] if len(parts) > 1 else "user"
-            findings.append(("SMTP Cleartext AUTH PLAIN", f"User: {user} [Base64 token exposed]"))
+            findings.append((f"{protocol} Cleartext AUTH PLAIN", f"User: {user} [Base64 token exposed]"))
         except Exception:
-            findings.append(("SMTP Cleartext AUTH PLAIN", "Base64 token exposed"))
+            findings.append((f"{protocol} Cleartext AUTH PLAIN", "Base64 token exposed"))
 
     return findings
 
@@ -329,8 +336,11 @@ def analyze_pcap_stream(pcap_bytes: bytes, filename: str = "capture.pcap") -> Pc
                 cert_info = handshake.certificate_info
                 findings.extend(handshake.findings)
 
-        # 1. Plaintext credential exposure detection
-        cred_leaks = detect_cleartext_credentials(combined_text)
+        # 1. Plaintext credential exposure detection. The finding is labelled with
+        # the protocol actually observed on this stream (SMTP/IMAP/POP3); anything
+        # else falls back to a neutral "Mail" label rather than guessing.
+        credential_protocol = protocol if protocol in {"SMTP", "IMAP", "POP3"} else "Mail"
+        cred_leaks = detect_cleartext_credentials(combined_text, credential_protocol)
         for leak_type, leak_details in cred_leaks:
             findings.append(SecurityFinding(
                 title=f"Cleartext Credential Exposure ({leak_type})",
@@ -355,7 +365,7 @@ def analyze_pcap_stream(pcap_bytes: bytes, filename: str = "capture.pcap") -> Pc
         if tls_detected:
             tls_idx = combined_payload.find(b"\x16\x03")
             pre_tls_text = combined_payload[:tls_idx].decode("utf-8", errors="ignore") if tls_idx > 0 else ""
-            pre_tls_cred_leaks = detect_cleartext_credentials(pre_tls_text)
+            pre_tls_cred_leaks = detect_cleartext_credentials(pre_tls_text, credential_protocol)
             has_auth_cmd = any(cmd in pre_tls_text.upper() for cmd in ["AUTH ", "LOGIN ", "PASS "])
             if pre_tls_cred_leaks or has_auth_cmd:
                 findings.append(SecurityFinding(
