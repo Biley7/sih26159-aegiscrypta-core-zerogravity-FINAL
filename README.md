@@ -24,6 +24,8 @@ AegisCrypta is a dual-paradigm security posture platform for **critical mail inf
 
 **AegisCrypta never invents data.** When a signal cannot be observed (no handshake captured, no certificate presented, PQC evaluator not run), the UI and API report it as *not reported* rather than assuming a safe default.
 
+> **Evaluating this project?** Start with [`EVALUATION_GUIDE.md`](EVALUATION_GUIDE.md) — a scripted live demo across three reference domains, the committed `samples/aegis_demo_smtp.pcap` walkthrough for the forensic tab, the engine design rationale, and a judge Q&A. The interactive console lives at <http://localhost:8000/docs>.
+
 ---
 
 ## Architecture
@@ -344,6 +346,10 @@ Coverage highlights: DNS check contracts, TLS/STARTTLS probing, certificate vali
 │   │                               # SettingsModal · PcapForensicsView · Footer · Toast · Logo
 │   ├── package.json                # Exact-pinned dependencies
 │   └── nginx.conf                  # Reverse-proxy template used by the web image
+├── samples/
+│   ├── aegis_demo_smtp.pcap        # Committed SMTP + STARTTLS capture for the forensic tab
+│   └── generate_demo_pcap.py       # Deterministic regenerator (--check runs the real analyzer)
+├── EVALUATION_GUIDE.md             # Judge walkthrough: live demo script, PCAP sample, Q&A
 ├── Dockerfile                      # 3 stages: backend · frontend-build · nginx
 ├── docker-compose.yml              # api + web topology
 └── README.md
