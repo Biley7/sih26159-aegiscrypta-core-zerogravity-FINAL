@@ -107,15 +107,15 @@ export const CertificateInspectorModal: React.FC<CertificateInspectorModalProps>
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Direct launch button: Inspect via Microservice (Port 8007) */}
+            {/* Direct launch button: live FastAPI Swagger schema */}
             <button
               type="button"
-              onClick={() => window.open('http://localhost:8007', '_blank')}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-mono text-blue-700 dark:text-blue-400 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 transition-colors"
-              title="Launch standalone microservice inspector on Port 8007"
+              onClick={() => window.open('http://localhost:8000/docs', '_blank')}
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-mono text-cyan-700 dark:text-cyan-300 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 hover:border-cyan-400/60 transition-colors"
+              title="Open the live FastAPI Swagger console in a new tab"
             >
               <ExternalLink size={12} />
-              <span>Inspect via Microservice (Port 8007)</span>
+              <span>Inspect Raw API Schema</span>
             </button>
 
             <button
@@ -266,11 +266,11 @@ export const CertificateInspectorModal: React.FC<CertificateInspectorModalProps>
         <div className="p-3.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/70 flex items-center justify-between">
           <button
             type="button"
-            onClick={() => window.open('http://localhost:8007', '_blank')}
-            className="sm:hidden text-xs text-blue-700 dark:text-blue-400 flex items-center gap-1"
+            onClick={() => window.open('http://localhost:8000/docs', '_blank')}
+            className="sm:hidden text-xs text-cyan-700 dark:text-cyan-300 flex items-center gap-1"
           >
             <ExternalLink size={12} />
-            <span>Port 8007 Microservice</span>
+            <span>Raw API Schema</span>
           </button>
           <div className="hidden sm:block text-[11px] font-mono text-slate-500">
             {realCert

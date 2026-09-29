@@ -18,9 +18,23 @@
   --terminal-bg: #0f172a;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  /* Neutral ramp backing every Tailwind `slate-*` utility (default: stock Tailwind). */
+  --t-slate-50: 248 250 252;
+  --t-slate-100: 241 245 249;
+  --t-slate-200: 226 232 240;
+  --t-slate-300: 203 213 225;
+  --t-slate-400: 148 163 184;
+  --t-slate-500: 100 116 139;
+  --t-slate-600: 71 85 105;
+  --t-slate-700: 51 65 85;
+  --t-slate-800: 30 41 59;
+  --t-slate-900: 15 23 42;
+  --t-slate-950: 2 6 23;
 }
 
-.dark, [data-theme="dark"], [data-theme="high-contrast"] {
+/* Deep Dark — slate/navy SOC base */
+.dark, [data-theme="dark"] {
   --bg-base: #090d16;
   --bg-surface: #111726;
   --bg-surface-secondary: #161f30;
@@ -32,16 +46,31 @@
   --terminal-bg: #070b12;
 }
 
+/* Pure Black — true OLED black, fully neutral (no blue cast) */
 [data-theme="high-contrast"] {
   --bg-base: #000000;
-  --bg-surface: #0a0a0f;
-  --bg-surface-secondary: #12121a;
-  --bg-surface-hover: #1c1c24;
-  --border-subtle: #272733;
-  --border-strong: #3f3f50;
-  --text-main: #ffffff;
-  --text-muted: #a1a1aa;
+  --bg-surface: #0d0d0d;
+  --bg-surface-secondary: #151515;
+  --bg-surface-hover: #1f1f1f;
+  --border-subtle: #1f1f1f;
+  --border-strong: #2e2e2e;
+  --text-main: #fafafa;
+  --text-muted: #a3a3a3;
   --terminal-bg: #000000;
+
+  /* Obsidian ramp: pure-black canvas, #0d0d0d panels, #1f1f1f hairlines.
+     Cyan / emerald / rose / amber accents are never touched by this remap. */
+  --t-slate-50: 250 250 250;
+  --t-slate-100: 245 245 245;
+  --t-slate-200: 229 229 229;
+  --t-slate-300: 212 212 212;
+  --t-slate-400: 163 163 163;
+  --t-slate-500: 115 115 115;
+  --t-slate-600: 82 82 82;
+  --t-slate-700: 43 43 43;
+  --t-slate-800: 31 31 31;
+  --t-slate-900: 13 13 13;
+  --t-slate-950: 0 0 0;
 }
 
 /* Print Stylesheet for Security Report */
@@ -100,35 +129,35 @@
 
 [data-theme="high-contrast"] {
   --bg-canvas: #000000;
-  --bg-surface: #0a0a0f;
-  --bg-surface-secondary: #12121a;
-  --bg-surface-elevated: #1a1a24;
-  --bg-surface-hover: #222230;
-  --bg-input: #000000;
+  --bg-surface: #0d0d0d;
+  --bg-surface-secondary: #151515;
+  --bg-surface-elevated: #1a1a1a;
+  --bg-surface-hover: #202020;
+  --bg-input: #0a0a0a;
 
-  --border-primary: #3b4d68;
-  --border-subtle: #4a5e7b;
-  --border-focus: #38bdf8;
+  --border-primary: #2b2b2b;
+  --border-subtle: #1f1f1f;
+  --border-focus: #22d3ee;
 
-  --text-primary: #ffffff;
-  --text-secondary: #e2e8f0;
-  --text-muted: #94a3b8;
+  --text-primary: #fafafa;
+  --text-secondary: #d4d4d4;
+  --text-muted: #a3a3a3;
 
-  --soc-secure: #10b981;
-  --soc-secure-bg: rgba(16, 185, 129, 0.15);
-  --soc-secure-border: #10b981;
+  --soc-secure: #34d399;
+  --soc-secure-bg: rgba(52, 211, 153, 0.14);
+  --soc-secure-border: #34d399;
 
-  --soc-warning: #f59e0b;
-  --soc-warning-bg: rgba(245, 158, 11, 0.15);
-  --soc-warning-border: #f59e0b;
+  --soc-warning: #fbbf24;
+  --soc-warning-bg: rgba(251, 191, 36, 0.14);
+  --soc-warning-border: #fbbf24;
 
-  --soc-critical: #f43f5e;
-  --soc-critical-bg: rgba(244, 63, 94, 0.18);
-  --soc-critical-border: #f43f5e;
+  --soc-critical: #fb7185;
+  --soc-critical-bg: rgba(251, 113, 133, 0.16);
+  --soc-critical-border: #fb7185;
 
-  --soc-pqc: #06b6d4;
-  --soc-pqc-bg: rgba(6, 182, 212, 0.15);
-  --soc-pqc-border: #06b6d4;
+  --soc-pqc: #22d3ee;
+  --soc-pqc-bg: rgba(34, 211, 238, 0.14);
+  --soc-pqc-border: #22d3ee;
 }
 
 /* Base resets & typography */
@@ -2571,4 +2600,26 @@ html, body {
     color: #000000 !important;
     break-inside: avoid;
   }
+}
+
+/* ==========================================================================
+   PURE BLACK — OLED CHROME
+   --------------------------------------------------------------------------
+   The neutral remap itself lives in the `--t-slate-*` variables above, which
+   every Tailwind `slate-*` utility resolves through. Only the few non-Tailwind
+   surfaces are finished off here.
+   ========================================================================== */
+
+/* Scrollbars & selection tuned for a pure-black canvas */
+[data-theme="high-contrast"] ::selection {
+  background: rgba(34, 211, 238, 0.3) !important;
+  color: #ffffff !important;
+}
+
+[data-theme="high-contrast"] ::-webkit-scrollbar-thumb {
+  background: #262626;
+}
+
+[data-theme="high-contrast"] ::-webkit-scrollbar-thumb:hover {
+  background: #3a3a3a;
 }

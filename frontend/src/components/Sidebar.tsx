@@ -196,17 +196,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
             );
           })}
 
-          {/* Microservices Port 8007 Direct Link */}
+          {/* FastAPI interactive schema (Swagger UI) */}
           <div className="pt-3 px-1">
             <button
               type="button"
-              onClick={() => window.open('http://localhost:8007', '_blank')}
+              onClick={() => window.open('http://localhost:8000/docs', '_blank')}
               className="w-full py-2 px-3 rounded text-xs font-mono text-cyan-700 dark:text-cyan-300 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 hover:border-cyan-400/60 transition-colors flex items-center justify-between group"
-              title="Open Raw Forensic Inspector on Port 8007"
+              title="Open the live FastAPI Swagger console in a new tab"
             >
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-cyan-500 dark:bg-cyan-400 animate-pulse"></span>
-                <span>Raw Inspector (8007)</span>
+                <span>API Inspector (Swagger)</span>
               </div>
               <ExternalLink size={12} className="text-cyan-600 dark:text-cyan-400 group-hover:translate-x-0.5 transition-transform" />
             </button>

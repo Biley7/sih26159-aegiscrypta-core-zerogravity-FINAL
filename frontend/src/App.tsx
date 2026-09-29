@@ -517,7 +517,7 @@ export function App() {
 
   return (
     <div
-      className="flex h-screen w-screen overflow-hidden overflow-x-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans selection:bg-blue-500/30 selection:text-blue-200 selection:dark:bg-blue-500/20"
+      className="flex h-screen w-screen overflow-hidden overflow-x-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans selection:bg-cyan-500/30"
       data-theme={settings.theme}
     >
       {/* 1. LEFT SIDEBAR: Pinned left, full height, strictly separated from terminal */}
@@ -699,15 +699,17 @@ export function App() {
               </div>
 
               {/* Cards 6+7 Stacked · Audit Volume + Activity Trend (3/12) */}
+              {/* Children keep their natural content height (no min-h-0) so the
+                  taller card can never be compressed past its own footer. */}
               <div className="xl:col-span-3 flex flex-col gap-5">
                 <AuditVolumeCard
-                  className="flex-1 min-h-0"
+                  className="flex-1 min-w-0"
                   checks={scanData?.checks}
                   cryptoPosture={scanData?.crypto_posture}
                   onExpand={() => setActiveTab('sessions')}
                 />
                 <ActivityTrendCard
-                  className="flex-1 min-h-0"
+                  className="flex-1 min-w-0"
                   checks={scanData?.checks}
                   score={score}
                   cryptoPosture={scanData?.crypto_posture}

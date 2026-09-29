@@ -65,7 +65,24 @@ export default {
           primary: '#F8FAFC',
           secondary: '#94A3B8',
           muted: '#64748B',
-        }
+        },
+        // The slate ramp is variable-driven (see `--t-slate-*` in styles.css) so
+        // the "Pure Black" OLED theme can swap the whole neutral scale for a true
+        // neutral obsidian ramp. This keeps every `hover:`/`group-hover:` accent
+        // working untouched — no `!important` specificity war required.
+        slate: {
+          50: 'rgb(var(--t-slate-50) / <alpha-value>)',
+          100: 'rgb(var(--t-slate-100) / <alpha-value>)',
+          200: 'rgb(var(--t-slate-200) / <alpha-value>)',
+          300: 'rgb(var(--t-slate-300) / <alpha-value>)',
+          400: 'rgb(var(--t-slate-400) / <alpha-value>)',
+          500: 'rgb(var(--t-slate-500) / <alpha-value>)',
+          600: 'rgb(var(--t-slate-600) / <alpha-value>)',
+          700: 'rgb(var(--t-slate-700) / <alpha-value>)',
+          800: 'rgb(var(--t-slate-800) / <alpha-value>)',
+          900: 'rgb(var(--t-slate-900) / <alpha-value>)',
+          950: 'rgb(var(--t-slate-950) / <alpha-value>)',
+        },
       },
       boxShadow: {
         subtle: '0 1px 2px 0 rgba(0, 0, 0, 0.35)',

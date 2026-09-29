@@ -83,9 +83,9 @@ export const ActivityTrendCard: React.FC<ActivityTrendCardProps> = ({
     : 'No Cert Data';
 
   return (
-    <div className={`${className} bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4 transition-colors hover:border-cyan-500/50 flex flex-col justify-between`}>
+    <div className={`${className} bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4 transition-colors hover:border-cyan-500/50 flex flex-col h-auto`}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-3 shrink-0 min-w-0">
         <div className="flex items-center gap-2">
           <Activity size={14} className="text-cyan-600 dark:text-cyan-400" />
           <span className="text-[11px] uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-400">
@@ -103,7 +103,7 @@ export const ActivityTrendCard: React.FC<ActivityTrendCardProps> = ({
       </div>
 
       {/* Snippet: Badge + Description text */}
-      <div className="flex items-center gap-3 my-2 p-3 rounded border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40">
+      <div className="flex items-center gap-3 my-2 p-3 rounded border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 shrink-0 min-w-0">
         <div className="w-10 h-10 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center shrink-0">
           <span className={`text-lg font-bold font-mono tracking-tight ${gradeColor}`}>
             {grade ?? '—'}
@@ -115,7 +115,7 @@ export const ActivityTrendCard: React.FC<ActivityTrendCardProps> = ({
       </div>
 
       {/* Comparative Progress Bars */}
-      <div className="space-y-3 mt-1 font-mono text-[11px]">
+      <div className="space-y-3 mt-1 font-mono text-[11px] shrink-0">
         {metrics.map((m, idx) => {
           const barColor = m.value === null ? '#94a3b8' : m.color;
           return (
@@ -141,9 +141,9 @@ export const ActivityTrendCard: React.FC<ActivityTrendCardProps> = ({
       </div>
 
       {/* Footer */}
-      <div className="pt-3 mt-2 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-[10px] font-mono text-slate-500 dark:text-slate-400">
-        <span className="tracking-widest uppercase">Chain: {chainLabel}</span>
-        <span className={`font-semibold tracking-widest uppercase ${total > 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}`}>
+      <div className="mt-auto pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-2 text-[10px] font-mono text-slate-500 dark:text-slate-400 shrink-0 min-w-0">
+        <span className="tracking-widest uppercase truncate min-w-0" title={`Chain: ${chainLabel}`}>Chain: {chainLabel}</span>
+        <span className={`font-semibold tracking-widest uppercase whitespace-nowrap shrink-0 ${total > 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}`}>
           {total > 0 ? `${passCount}/${total} Checks Pass` : 'No Check Data'}
         </span>
       </div>
