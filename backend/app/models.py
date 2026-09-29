@@ -103,6 +103,19 @@ class CryptographicPosture(BaseModel):
             "False means no PQC compliance claim can be made for this scan."
         ),
     )
+    telemetry_observed: bool = Field(
+        True,
+        description=(
+            "True when at least one TLS handshake completed, so the transport "
+            "layer was genuinely observed. False means port 25 was unreachable, "
+            "STARTTLS was blocked, or the scan ran degraded: the Crypto "
+            "Deprecation Index carries no information for this target and is "
+            "excluded from the fused posture score, which is renormalised over "
+            "the observed dimensions (email authentication + exploitation "
+            "likelihood). Clients must render the transport layer as "
+            "UNAUDITED rather than reporting a fabricated crypto grade."
+        ),
+    )
 
 
 class AiRiskScore(BaseModel):

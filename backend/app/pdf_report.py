@@ -1,6 +1,7 @@
 import io
 from typing import List, Optional
 from datetime import datetime
+from xml.sax.saxutils import escape as xml_escape
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -109,9 +110,20 @@ def generate_pdf_report(
     story = []
 
     # 1. Header Banner
+    # SECURITY: ReportLab's Paragraph parses a mini-HTML dialect, so every value
+    # derived from the network (domain, resolver output, banners, certificate
+    # fields) is XML-escaped before interpolation. Template-owned tags such as
+    # <b> stay raw because only the interpolated *values* are escaped.
     story.append(Paragraph("AegisCrypta — Forensic Email Security Audit", title_style))
-    class_info = f" &nbsp;|&nbsp; Classification: <b>{linguistic_classification}</b>" if linguistic_classification else ""
-    story.append(Paragraph(f"Target Domain: <b>{domain}</b> &nbsp;|&nbsp; Scan Date: {scanned_at}{class_info}", subtitle_style))
+    class_info = (
+        f" &nbsp;|&nbsp; Classification: <b>{xml_escape(str(linguistic_classification))}</b>"
+        if linguistic_classification else ""
+    )
+    story.append(Paragraph(
+        f"Target Domain: <b>{xml_escape(str(domain))}</b> &nbsp;|&nbsp; "
+        f"Scan Date: {xml_escape(str(scanned_at))}{class_info}",
+        subtitle_style
+    ))
     story.append(Spacer(1, 14))
 
     # 2. Score Visual Section
@@ -159,7 +171,7 @@ def generate_pdf_report(
             else:
                 status_html = '<font color="#DC2626"><b>[ DEFICIT ]</b></font>'
             fuzzy_table_data.append([
-                Paragraph(ant_key.replace('_', ' ').title(), body_style),
+                Paragraph(xml_escape(ant_key.replace('_', ' ').title()), body_style),
                 Paragraph(f"{pct}% ({ant_val:.2f})", bold_cell_style),
                 Paragraph(status_html, body_style)
             ])
@@ -215,9 +227,9 @@ def generate_pdf_report(
             details_txt = str(check.details)
 
         table_data.append([
-            Paragraph(f"<b>{check.name}</b>", bold_cell_style),
+            Paragraph(f"<b>{xml_escape(str(check.name))}</b>", bold_cell_style),
             Paragraph(st_html, body_style),
-            Paragraph(details_txt, body_style)
+            Paragraph(xml_escape(str(details_txt)), body_style)
         ])
 
     check_table = Table(table_data, colWidths=[100, 75, 355])
@@ -241,7 +253,7 @@ def generate_pdf_report(
 
     if recommendations:
         for i, rec in enumerate(recommendations, 1):
-            rec_text = f"<b>{i}.</b> {rec}"
+            rec_text = f"<b>{i}.</b> {xml_escape(str(rec))}"
             rec_block.append(Paragraph(rec_text, rec_style))
             rec_block.append(Spacer(1, 4))
     else:
@@ -254,7 +266,7 @@ def generate_pdf_report(
     if playbook and hasattr(playbook, 'postfix_main_cf') and playbook.postfix_main_cf:
         pb_block = [
             Paragraph("Automated Hardening Directives (Postfix Snippet)", section_heading),
-            Paragraph(playbook.postfix_main_cf[:350].replace('\n', '<br/>'), code_style),
+            Paragraph(xml_escape(playbook.postfix_main_cf[:350]).replace('\n', '<br/>'), code_style),
             Spacer(1, 10)
         ]
         story.append(KeepTogether(pb_block))

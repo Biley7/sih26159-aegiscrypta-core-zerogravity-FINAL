@@ -562,7 +562,7 @@ export function App() {
           {activeTab !== 'overview' && activeTab !== 'sessions' && (
             <div className="p-3 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs font-mono">
               <div className="flex items-center gap-2">
-                <Shield size={14} className="text-blue-500 dark:text-blue-400" />
+                <Shield size={14} className="text-cyan-600 dark:text-cyan-400" />
                 <span className="font-semibold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
                   FILTERED TELEMETRY: {activeTab.toUpperCase()}
                 </span>
@@ -573,7 +573,7 @@ export function App() {
               <button
                 type="button"
                 onClick={() => setActiveTab('overview')}
-                className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-white underline text-[11px]"
+                className="text-cyan-700 dark:text-cyan-400 hover:text-cyan-900 dark:hover:text-cyan-200 underline text-[11px]"
               >
                 Return to Full Overview
               </button>
@@ -737,7 +737,7 @@ export function App() {
                 <button
                   type="button"
                   onClick={() => setIsCertModalOpen(true)}
-                  className="px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-blue-700 dark:text-blue-400 hover:text-blue-900 dark:hover:text-white transition-colors"
+                  className="px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-cyan-700 dark:text-cyan-400 hover:text-cyan-900 dark:hover:text-cyan-200 transition-colors"
                 >
                   View Full Chain
                 </button>

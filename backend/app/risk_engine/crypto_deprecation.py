@@ -18,10 +18,20 @@ Reference Standards:
 - CA/Browser Forum Baseline Requirements for Subject Public Key Info & Validity
 """
 
+import logging
+
 import numpy as np
 import skfuzzy as fuzz
 from skfuzzy import control as ctrl
 from typing import Dict, List, Tuple, Optional
+
+logger = logging.getLogger("aegiscrypta.risk_engine.cdi")
+
+# Constant returned when the Mamdani rule base activates zero rules for an
+# antecedent tuple and defuzzification is therefore impossible. This is a
+# DEGRADED result, not a measurement — every occurrence is logged as a warning
+# with the unmatched tuple so the coverage hole can be closed.
+CDI_FALLBACK_SCORE = 50.0
 
 # Mozilla TLS Guidelines (v5.7) - Recommended Cipher Suite Classification
 # Source: https://wiki.mozilla.org/Security/Server_Side_TLS#Recommended_ciphersuite
@@ -218,6 +228,28 @@ def build_cdi_control_system():
         ctrl.Rule(key_input['moderate'] & tls_input['moderate'] & fs_input['yes'], cdi_output['moderate']),
         ctrl.Rule(cert_input['moderate'] & cipher_input['moderate'] & fs_input['yes'], cdi_output['moderate']),
         ctrl.Rule(tls_input['moderate'] & cert_input['moderate'] & fs_input['yes'], cdi_output['moderate']),
+
+        # COVERAGE FIX: TLS 1.2 + moderate cipher + STRONG key + healthy cert + PFS.
+        # -----------------------------------------------------------------------
+        # This antecedent tuple activated ZERO rules in the original 25-rule base,
+        # so `sim.output` never contained 'cdi' and the engine silently fell back to
+        # a constant CDI of 50.0 — the single most common real-world mail-server
+        # configuration (TLS 1.2 with a CBC/static-RSA-class suite, a 3072-bit RSA
+        # or 256-bit EC key, a fresh certificate and ECDHE key exchange).
+        #
+        # Rationale for CDI 'moderate' rather than 'low' (NIST SP 800-52r2 §3.3.1):
+        #   The only differing property from the already-covered tuple
+        #   (tls=moderate & cipher=strong & key=strong & cert=strong & fs=yes -> low)
+        #   is the cipher classification. 'moderate' in MOZILLA_CIPHER_STRENGTH means
+        #   CBC-mode or static-RSA AEAD suites, which remain acceptable but are not
+        #   AEAD-with-PFS strong. The consequent must not exceed the weaker tuple
+        #   (tls=moderate & cipher=moderate & key=moderate & fs=yes -> moderate)
+        #   or the rule base would be non-monotonic in key strength.
+        ctrl.Rule(
+            tls_input['moderate'] & cipher_input['moderate'] &
+            key_input['strong'] & cert_input['strong'] & fs_input['yes'],
+            cdi_output['moderate']
+        ),
 
         # Critical deprecation triggers (unconditional — any single severe flaw)
         ctrl.Rule(tls_input['old'], cdi_output['high']),
@@ -416,6 +448,12 @@ def compute_crypto_deprecation_index(
         tls_membership['moderate'], cipher_membership['moderate'],
         key_membership['strong'], cert_membership['strong'], fs_membership['no']
     )
+    # COVERAGE FIX: TLS 1.2 + moderate cipher + strong key + healthy cert + PFS.
+    # Previously unmatched by the rule base (0 activations -> constant fallback).
+    r_tls12_mod_cipher_strong_key = min(
+        tls_membership['moderate'], cipher_membership['moderate'],
+        key_membership['strong'], cert_membership['strong'], fs_membership['yes']
+    )
 
     fired_rules = []
     if r1_strength > 0.05:
@@ -444,6 +482,12 @@ def compute_crypto_deprecation_index(
             f"IF TLS Moderate AND Cipher Moderate (Static RSA AEAD) AND Key Strong AND Cert Strong AND No Forward Secrecy "
             f"THEN CDI Moderate [DEF-05: realistic static-RSA transitional] "
             f"(activation: {r_fs_trans_cipher_mod_tls_mod:.2f})"
+        )
+    if r_tls12_mod_cipher_strong_key > 0.05:
+        fired_rules.append(
+            f"IF TLS Moderate (1.2) AND Cipher Moderate AND Key Strong AND Cert Healthy AND Forward Secrecy "
+            f"THEN CDI Moderate [coverage rule: previously unmatched tuple] "
+            f"(activation: {r_tls12_mod_cipher_strong_key:.2f})"
         )
     if r2_strength > 0.05:
         fired_rules.append(f"IF TLS Old (Deprecated) THEN CDI High (activation: {r2_strength:.2f})")
@@ -474,18 +518,51 @@ def compute_crypto_deprecation_index(
     sim.input['cert_validity'] = cert_days
     sim.input['forward_secrecy'] = 1.0 if forward_secrecy else 0.0
 
+    cdi_degraded = False
+    cdi_degraded_reason = ""
     try:
         sim.compute()
+        if 'cdi' not in sim.output:
+            # A rule base that activates zero rules leaves the consequent
+            # undefined, so skfuzzy never writes 'cdi' into the output mapping.
+            raise ValueError(
+                "Mamdani rule base activated zero rules for this antecedent tuple"
+            )
         cdi_score = float(sim.output['cdi'])
     except Exception as e:
-        # Standardized fallback if an anomalous boundary produces dangling activation
-        cdi_score = 50.0
+        # Degraded result: NOT a measurement. Record the exact unmatched
+        # antecedent tuple so the coverage hole is actionable, and surface the
+        # degradation to the caller instead of silently reporting 50.0 as if it
+        # had been defuzzified.
+        cdi_degraded = True
+        cdi_degraded_reason = f"{type(e).__name__}: {e}"
+        cdi_score = CDI_FALLBACK_SCORE
+        logger.warning(
+            "CDI defuzzification fell back to the constant default %.1f. "
+            "Unmatched antecedent tuple -> tls_version=%r (numeric=%s), "
+            "cipher_strength=%r (numeric=%s), key_length=%r %s-bit (numeric=%s), "
+            "cert_validity=%s days, forward_secrecy=%s. Cause: %s",
+            CDI_FALLBACK_SCORE, tls_version, tls_numeric, cipher_name,
+            cipher_numeric, key_algorithm, key_size_bits, key_numeric,
+            cert_days, forward_secrecy, cdi_degraded_reason,
+        )
 
     # Add descriptive fired rule entries for frontend
     for r in fired_rules:
         contributing_factors.append({
             'category': 'Fired Rules',
             'description': r
+        })
+
+    if cdi_degraded:
+        # Machine-readable marker. Deliberately NOT category 'Fired Rules' so it
+        # is never mistaken for an activated rule by explaining consumers.
+        contributing_factors.append({
+            'category': 'Engine Integrity',
+            'degraded': True,
+            'metric': 'cdi',
+            'fallback_score': CDI_FALLBACK_SCORE,
+            'reason': cdi_degraded_reason,
         })
 
     return cdi_score, contributing_factors

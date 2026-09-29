@@ -253,7 +253,7 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
             }}
             className={`w-full text-left p-3.5 rounded bg-slate-50 dark:bg-slate-800/60 border transition-colors duration-150 group active:scale-[0.99] ${
               activeNode === 'cred-1'
-                ? 'border-blue-500 ring-1 ring-blue-500/40'
+                ? 'border-cyan-500 ring-1 ring-cyan-500/40'
                 : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
             }`}
           >
@@ -294,7 +294,7 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
             }}
             className={`w-full text-left p-3.5 rounded bg-slate-50 dark:bg-slate-800/60 border transition-colors duration-150 group active:scale-[0.99] ${
               activeNode === 'cred-2'
-                ? 'border-blue-500 ring-1 ring-blue-500/40'
+                ? 'border-cyan-500 ring-1 ring-cyan-500/40'
                 : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
             }`}
           >
@@ -451,7 +451,7 @@ export const ThreatCenter: React.FC<ThreatCenterProps> = ({
                 Fuzzy Risk Decomposition (6 Antecedent Engines)
               </span>
               {defuzzificationConfidence && (
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20">
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 border border-cyan-500/20">
                   Certainty: {(defuzzificationConfidence * 100).toFixed(0)}%
                 </span>
               )}

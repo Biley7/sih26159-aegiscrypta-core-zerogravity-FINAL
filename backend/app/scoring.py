@@ -348,7 +348,8 @@ def calculate_overall_score(
         compute_crypto_deprecation_index,
         compute_posture_exposure_deficit,
         compute_exploitation_likelihood_index,
-        compute_posture_risk
+        compute_posture_risk,
+        compute_posture_risk_unobserved_transport,
     )
     
     # Keep legacy scoring for backward compatibility
@@ -501,13 +502,66 @@ def calculate_overall_score(
         'pqc_readiness': pqc_readiness
     }
 
+    # Transport telemetry availability.
+    # ---------------------------------------------------------------------------
+    # A completed TLS handshake is the only evidence that the transport layer was
+    # genuinely observed. When no handshake completed, every value fed into the
+    # Crypto Deprecation Index is a placeholder (empty version/cipher strings,
+    # no key, no certificate), which defuzzifies to a worst-case CDI of ~86.04.
+    # The Tier 2 non-dilution OR rule then promotes that artifact to CRITICAL with
+    # a posture score of 0 — asserting catastrophic cryptography for a mail
+    # exchanger the scan never reached. Instead, exclude the unobserved CDI and
+    # renormalise the fused score over the dimensions that WERE observed.
+    transport_observed = len(successful_handshakes) > 0
+
+    # Publish the flag so the API response can report the transport layer as
+    # UNAUDITED. ``crypto_posture`` is the same model instance that is embedded in
+    # the response payload, so clients see the flag without a contract change.
+    if crypto_posture is not None:
+        try:
+            crypto_posture.telemetry_observed = transport_observed
+        except (AttributeError, ValueError):  # pragma: no cover - defensive
+            pass
+
     # Compute Tier 2 final fusion (returns posture risk score 0-100, where 0=low risk and 100=critical risk)
-    fuzzy_risk_score, linguistic_classification, antecedent_scores, risk_factors = compute_posture_risk(
-        cdi_score=cdi_score,
-        ped_score=ped_score,
-        eli_score=eli_score,
-        raw_crypto_metrics=raw_crypto_metrics
-    )
+    if transport_observed:
+        fuzzy_risk_score, linguistic_classification, antecedent_scores, risk_factors = compute_posture_risk(
+            cdi_score=cdi_score,
+            ped_score=ped_score,
+            eli_score=eli_score,
+            raw_crypto_metrics=raw_crypto_metrics
+        )
+    else:
+        fuzzy_risk_score, linguistic_classification, antecedent_scores, risk_factors = (
+            compute_posture_risk_unobserved_transport(
+                ped_score=ped_score,
+                eli_score=eli_score,
+            )
+        )
+        # Disclose the exclusion explicitly so neither an analyst nor a judge can
+        # mistake an unaudited transport layer for a clean cryptographic result.
+        findings = list(findings) + [
+            SecurityFinding(
+                title="Transport Layer Not Observed",
+                severity=FindingSeverity.LOW,
+                category="Protocol",
+                description=(
+                    "No TLS handshake completed for any mail exchanger, so the "
+                    "transport layer was not observed (port 25 unreachable, "
+                    "STARTTLS blocked, or the scan ran degraded). Cryptographic "
+                    "properties such as TLS version, cipher strength and "
+                    "certificate health are therefore unknown, not necessarily "
+                    "weak. The fused posture score excludes this unobserved "
+                    "dimension and reflects only verifiable DNS authentication "
+                    "and exposure records."
+                ),
+                recommendation=(
+                    "Re-run the scan from a network path that permits outbound "
+                    "TCP/25 to obtain transport telemetry before drawing any "
+                    "conclusion about cryptographic posture."
+                ),
+            )
+        ]
     
     # Convert fuzzy risk score (0-100, where 100=highest risk) to posture score (0-100, where 100=best posture)
     # matching the 0-100 range and semantics of legacy "score" per frontend contract (ScanResponse)

@@ -11,11 +11,17 @@ Uses scikit-fuzzy (skfuzzy) for Mamdani fuzzy inference systems.
 from .crypto_deprecation import compute_crypto_deprecation_index
 from .posture_exposure import compute_posture_exposure_deficit
 from .exploitation_likelihood import compute_exploitation_likelihood_index
-from .posture_risk import compute_posture_risk
+from .posture_risk import (
+    compute_posture_risk,
+    compute_posture_risk_unobserved_transport,
+)
 
 __all__ = [
     'compute_crypto_deprecation_index',
     'compute_posture_exposure_deficit',
     'compute_exploitation_likelihood_index',
-    'compute_posture_risk'
+    'compute_posture_risk',
+    # Fuse posture risk over the observed dimensions only, for scans where the
+    # TLS transport layer was never reached (port filtered / degraded scan).
+    'compute_posture_risk_unobserved_transport',
 ]

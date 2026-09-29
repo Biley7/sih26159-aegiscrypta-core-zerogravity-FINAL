@@ -385,7 +385,14 @@ def generate_html_forensic_report(
     cvss_metrics: Optional[object] = None
 ) -> str:
     """Renders comprehensive HTML forensic audit report using Jinja2."""
-    template = jinja2.Template(HTML_TEMPLATE)
+    # SECURITY: autoescape MUST stay enabled. Every ``{{ ... }}`` site in
+    # HTML_TEMPLATE interpolates a scalar value (domain, score, check status,
+    # resolver output, banner/cipher/certificate strings, recommendation text),
+    # so escaping is always correct and no site requires a ``|safe`` mark — none
+    # of them emits pre-built markup. Without this, a scan target could plant
+    # HTML/JS via a DNS TXT record, an SMTP banner, or a certificate field and
+    # execute it when an analyst opens the exported report.
+    template = jinja2.Template(HTML_TEMPLATE, autoescape=True)
 
     protocols = crypto_posture.protocols_audited if crypto_posture else []
     findings = crypto_posture.prioritized_findings if crypto_posture else []
